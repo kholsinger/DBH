@@ -1,0 +1,17 @@
+## R files to ignore
+##
+.Rhistory
+
+## RStudio files to ignore
+##
+.Rproj*
+*.Rproj
+
+## Directories and files from Margaret to ignore
+##
+climate-correlations/*
+climate-response-functions/*
+plots.zip
+plots/*.pdf
+*.pptx
+vanderwel*
