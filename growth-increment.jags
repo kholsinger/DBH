@@ -1,0 +1,47 @@
+## Current model assumes data from only one site
+
+model {
+  for (i in 1:n.obs) {
+    gi[i] ~ dnorm(mu.year.indiv[year[i],indiv[i]], tau.resid)
+  }
+
+  ## expectation for individual j in year i is sum of year
+  ## and indivdidual effects
+  ##
+  for (i in 1:n.years) {
+    for (j in 1:n.indiv) {
+      mu.year.indiv[i,j] <- mu.year[i] + mu.indiv[j]
+    }
+  }
+
+  ## first individual used as baseline for comparison.
+  ## required for identifiability
+  ##
+  mu.indiv[1] <- 0.0
+  for (i in 2:n.indiv) {
+    mu.indiv[i] ~ dnorm(0.0, tau.indiv)
+  }
+
+  ## n.months is number of months of prior weather included in
+  ## calculating expectation
+  ##
+  for (i in 1:n.years) {
+    mu.year[i] <- beta.0 +
+                  inprod(beta.ppt[1:n.months], ppt[i,1:n.months]) +
+                  inprod(beta.tmn[1:n.months], tmn[i,1:n.months]) +
+                  inprod(beta.tmx[1:n.months], tmx[1,1:n.months]) +
+                  inprod(beta.vpd[1:n.months], vpd[1,1:n.months])
+  }
+
+  ## priors
+  ##
+  beta.0 ~ dnorm(0.0, tau.beta)
+  for (i in 1:n.months) {
+    beta.ppt[i] ~ dnorm(0.0, tau.beta)
+    beta.tmn[i] ~ dnorm(0.0, tau.beta)
+    beta.tmx[i] ~ dnorm(0.0, tau.beta)
+    beta.vpd[i] ~ dnorm(0.0, tau.beta)
+  }
+  tau.resid ~ dgamma(1.0, 1.0)
+  tau.indiv ~ dgamma(1.0, 1.0)
+}
