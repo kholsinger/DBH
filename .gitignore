@@ -14,9 +14,15 @@ climate-response-functions/*
 plots.zip
 plots/*.pdf
 *.pptx
-vanderwel*
 
 ## Miscellaneous other files to ignore
 ##
+*.Rsave
+*.pdf
 *~
+
+## Ignore document directories
+##
+Documents/*
+
 
