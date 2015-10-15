@@ -21,7 +21,7 @@ months <- c("Jan.1", "Feb.1", "Mar.1", "Apr.1", "May.1", "Jun.1",
             "Jul.1", "Aug.1", "Sep.1", "Oct.1", "Nov.1", "Dec.1",
             "Jan.2", "Feb.2", "Mar.2", "Apr.2", "May.2", "Jun.2",
             "Jul.2", "Aug.2")
-months <- months[seq(from=length(months)-(n.months-1), to=length(months))]
+months <- months[seq(to=length(months), from=length(months)-(n.months-1))]
 
 par <- character(0)
 month <- character(0)

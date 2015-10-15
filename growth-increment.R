@@ -12,8 +12,10 @@ debug <- FALSE
 source("detr.R")
 source("allfunctionsdavid.v13.R")
 
-## set paths
-plot.data.path <- "plot-data"
+month.no <- function(year, month, start.year) {
+  num <- (year-start.year)*12 + month
+  return(num)
+}
 
 ## N.B.: VPD series does not include 2014. Requires manual adjustments below
 ##
@@ -24,7 +26,7 @@ end.series <- 2014
 final.month <- 8
 ## n.months: number of months included as covariates
 ##
-n.months <- 6
+n.months <- 8
 
 ## MCMC settings
 ##
@@ -39,6 +41,9 @@ if (debug) {
 } else {
   n.chains <- 5
 }
+
+## set paths
+plot.data.path <- "plot-data"
 
 ### load data
 ##
@@ -114,19 +119,19 @@ tmx <- matrix(nrow=end.series-start.series, ncol=n.months)
 vpd <- matrix(nrow=end.series-start.series, ncol=n.months)
 for (i in (start.series+1):end.series) {
   yr <- i - start.series
-  if (n.months > final.month) {
-    tmp <- subset(data.climate, (year==(i-1)
-                                 & month > 12 - (n.months-final.month))
-                  | (year==i & month <= final.month))
-  } else {
-    tmp <- subset(data.climate, year==i & month>=final.month - (n.months+1)
-                  & month <= final.month)
-  }
+  ##
+  ## September hard-coded as end of growing season
+  ##
+  month.end <- month.no(i, 9, start.series)
   for (j in 1:n.months) {
-    ppt[yr,j] <- tmp$ppt.mm[j]
-    tmn[yr,j] <- tmp$TmeanC[j]
-    tmx[yr,j] <- tmp$TmaxC[j]
-    vpd[yr,j] <- tmp$vpd[j]
+    month <- month.end-j
+    if (debug) {
+      cat(i, j, month, "\n")
+    }
+    ppt[yr,j] <- data.climate$ppt.mm[month]
+    tmn[yr,j] <- data.climate$TmeanC[month]
+    tmx[yr,j] <- data.climate$TmaxC[month]
+    vpd[yr,j] <- data.climate$vpd[month]
   }
 }
 
