@@ -12,7 +12,6 @@ load(file=results.file)
 beta.0 <- fit$BUGSoutput$sims.list$beta.0
 beta.ppt <- fit$BUGSoutput$sims.list$beta.ppt
 beta.tmn <- fit$BUGSoutput$sims.list$beta.tmn
-beta.tmx <- fit$BUGSoutput$sims.list$beta.tmx
 beta.vpd <- fit$BUGSoutput$sims.list$beta.vpd
 
 n.reps <- nrow(beta.0)
@@ -21,7 +20,7 @@ months <- c("Jan.1", "Feb.1", "Mar.1", "Apr.1", "May.1", "Jun.1",
             "Jul.1", "Aug.1", "Sep.1", "Oct.1", "Nov.1", "Dec.1",
             "Jan.2", "Feb.2", "Mar.2", "Apr.2", "May.2", "Jun.2",
             "Jul.2", "Aug.2")
-months <- months[seq(to=length(months), from=length(months)-(n.months-1))]
+months <- months[seq(from=length(months), to=length(months)-(n.months-1))]
 
 par <- character(0)
 month <- character(0)
@@ -31,13 +30,9 @@ for (i in 1:length(months)) {
   month <- c(month, rep(months[i], n.reps))
   values <- c(values, beta.ppt[,i])
 
-  par <- c(par, rep("Tmeann", n.reps))
+  par <- c(par, rep("Tmean", n.reps))
   month <- c(month, rep(months[i], n.reps))
   values <- c(values, beta.tmn[,i])
-
-  par <- c(par, rep("Tmax", n.reps))
-  month <- c(month, rep(months[i], n.reps))
-  values <- c(values, beta.tmx[,i])
 
   par <- c(par, rep("VPD", n.reps))
   month <- c(month, rep(months[i], n.reps))

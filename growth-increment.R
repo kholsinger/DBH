@@ -120,9 +120,7 @@ vpd <- matrix(nrow=end.series-start.series, ncol=n.months)
 for (i in (start.series+1):end.series) {
   yr <- i - start.series
   ##
-  ## September hard-coded as end of growing season
-  ##
-  month.end <- month.no(i, 9, start.series)
+  month.end <- month.no(i, final.month+1, start.series)
   for (j in 1:n.months) {
     month <- month.end-j
     if (debug) {
@@ -132,6 +130,24 @@ for (i in (start.series+1):end.series) {
     tmn[yr,j] <- data.climate$TmeanC[month]
     tmx[yr,j] <- data.climate$TmaxC[month]
     vpd[yr,j] <- data.climate$vpd[month]
+  }
+}
+if (debug) {
+  if (n.months < 9) {
+    months <- c("Jan.1", "Feb.1", "Mar.1", "Apr.1", "May.1", "Jun.1",
+                "Jul.1", "Aug.1", "Sep.1", "Oct.1", "Nov.1", "Dec.1",
+                "Jan.2", "Feb.2", "Mar.2", "Apr.2", "May.2", "Jun.2",
+                "Jul.2", "Aug.2")
+    months <- months[seq(from=length(months), to=length(months)-(n.months-1))]
+
+    rownames(ppt) <- seq(start.series+1, end.series, by=1)
+    colnames(ppt) <- months
+    cat(ppt["1988",],"\n")
+    cat(data.climate$ppt.mm[data.climate$year==1988][final.month:(final.month+1-6)], "\n")
+    cat(ppt["1998",],"\n")
+    cat(data.climate$ppt.mm[data.climate$year==1998][final.month:(final.month+1-6)], "\n")
+    cat(ppt["2008",],"\n")
+    cat(data.climate$ppt.mm[data.climate$year==2008][final.month:(final.month+1-6)], "\n")
   }
 }
 
@@ -150,7 +166,6 @@ jags.data <- c("gi",
                "indiv",
                "ppt",
                "tmn",
-               "tmx",
                "vpd",
                "n.obs",
                "n.years",
@@ -160,7 +175,6 @@ jags.data <- c("gi",
 jags.pars <- c("beta.0",
                "beta.ppt",
                "beta.tmn",
-               "beta.tmx",
                "beta.vpd",
                "mu.year",
                "mu.indiv",

@@ -29,7 +29,7 @@ model {
     mu.year[i] <- beta.0 +
                   inprod(beta.ppt[1:n.months], ppt[i,1:n.months]) +
                   inprod(beta.tmn[1:n.months], tmn[i,1:n.months]) +
-                  inprod(beta.tmx[1:n.months], tmx[i,1:n.months]) +
+##                  inprod(beta.tmx[1:n.months], tmx[i,1:n.months]) +
                   inprod(beta.vpd[1:n.months], vpd[i,1:n.months])
   }
 
