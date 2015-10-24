@@ -12,7 +12,6 @@ load(file=results.file)
 beta.0 <- fit$BUGSoutput$sims.list$beta.0
 beta.ppt <- fit$BUGSoutput$sims.list$beta.ppt
 beta.tmn <- fit$BUGSoutput$sims.list$beta.tmn
-beta.vpd <- fit$BUGSoutput$sims.list$beta.vpd
 
 n.reps <- nrow(beta.0)
 
@@ -33,10 +32,6 @@ for (i in 1:length(months)) {
   par <- c(par, rep("Tmean", n.reps))
   month <- c(month, rep(months[i], n.reps))
   values <- c(values, beta.tmn[,i])
-
-  par <- c(par, rep("VPD", n.reps))
-  month <- c(month, rep(months[i], n.reps))
-  values <- c(values, beta.vpd[,i])
 }
 
 for.plot <- data.frame(par=par, month=month, values=values)

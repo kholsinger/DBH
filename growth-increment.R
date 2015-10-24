@@ -17,6 +17,24 @@ month.no <- function(year, month, start.year) {
   return(num)
 }
 
+standardize.vector <- function(x) {
+  x.bar <- mean(x, na.rm=TRUE)
+  s.d. <- sd(x, na.rm=TRUE)
+  return((x-x.bar)/s.d.)
+}
+
+standardize <- function(x) {
+  if (is.matrix(x)) {
+    y <- matrix(nrow=nrow(x),ncol=ncol(x))
+    for (i in 1:ncol(x)) {
+      y[,i] <- standardize.vector(x[,i])
+    }
+  } else {
+    y <- standardize.vector(x)
+  }
+  return(y)
+}
+
 ## N.B.: VPD series does not include 2014. Requires manual adjustments below
 ##
 start.series <- 1981
@@ -161,12 +179,17 @@ n.indiv <- length(unique(indiv))
 ##
 tau.beta <- 1.0
 
+## standardize response variable and covariates before JAGS analysis
+##
+gi <- standardize(gi)
+ppt <- standardize(ppt)
+tmn <- standardize(tmn)
+
 jags.data <- c("gi",
                "year",
                "indiv",
                "ppt",
                "tmn",
-               "vpd",
                "n.obs",
                "n.years",
                "n.indiv",
@@ -175,7 +198,6 @@ jags.data <- c("gi",
 jags.pars <- c("beta.0",
                "beta.ppt",
                "beta.tmn",
-               "beta.vpd",
                "mu.year",
                "mu.indiv",
                "mu.year.indiv",
