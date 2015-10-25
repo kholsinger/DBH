@@ -7,6 +7,35 @@ library(R2jags)
 rm(list=ls())
 
 debug <- FALSE
+check.residuals <- FALSE
+
+## N.B.: VPD series does not include 2014. Requires manual adjustments below
+##
+start.series <- 1981
+end.series <- 2014
+## final.month: last month of data relevant to current year
+##   growth increment
+final.month <- 8
+## n.months: number of months included as covariates
+##
+n.months <- 20
+
+## MCMC settings
+##
+n.burnin <- 1000
+n.iter <- 2000
+n.thin <- 1
+if (debug) {
+  n.chains <- 2
+  ## to allow replication of results across runs in JAGS
+  ##
+  set.seed(1)
+} else {
+  n.chains <- 5
+}
+
+## set paths
+plot.data.path <- "plot-data"
 
 ## load detr() and helper functions
 source("detr.R")
@@ -34,34 +63,6 @@ standardize <- function(x) {
   }
   return(y)
 }
-
-## N.B.: VPD series does not include 2014. Requires manual adjustments below
-##
-start.series <- 1981
-end.series <- 2014
-## final.month: last month of data relevant to current year
-##   growth increment
-final.month <- 8
-## n.months: number of months included as covariates
-##
-n.months <- 8
-
-## MCMC settings
-##
-n.burnin <- 1000
-n.iter <- 6000
-n.thin <- 1
-if (debug) {
-  n.chains <- 2
-  ## to allow replication of results across runs in JAGS
-  ##
-  set.seed(1)
-} else {
-  n.chains <- 5
-}
-
-## set paths
-plot.data.path <- "plot-data"
 
 ### load data
 ##
@@ -102,24 +103,26 @@ rm(prism, vpd, vpd81)
 
 ## translate data into format required for JAGS analysis
 ##
-
-## individual growth increment data
-## only for first set of plot data at the moment
-##
-data <- data.frame(t(data.tr.det[[1]]))
-colnames(data) <- seq(from=start.series+1, to=end.series+1, by=1)
+data <- data.frame(t(data.tr.det[[1]]), site=files[1])
+for (i in 2:length(data.tr.det)) {
+  tmp.data <- data.frame(t(data.tr.det[[i]]), site=files[i])
+  data <- rbind(data, tmp.data)
+}
+colnames(data) <- c(seq(from=start.series+1, to=end.series+1, by=1), "site")
 data$"2014" <- 2014
+data$id <- rownames(data)
+years <- setdiff(colnames(data), c("site","id"))
 gi.data <- reshape(data,
-                   idvar="id",
-                   ids=row.names(data),
-                   times=as.numeric(colnames(data)),
+                   varying=list(years),
+                   v.names="gi",
                    timevar="yr",
-                   varying=list(colnames(data)),
-                   direction="long",
-                   v.names="gi")
+                   idvar=c("id","site"),
+                   ids=id,
+                   times=as.numeric(years),
+                   direction="long")
 gi.data <- subset(gi.data, yr <= end.series)
 gi.data$yr <- gi.data$yr - start.series
-## exclude growth increments with estimate=0
+## exclude growth increments with estimate <= 0
 ##
 gi.data <- subset(gi.data, gi > 0)
 ##
@@ -175,6 +178,12 @@ n.obs <- length(gi)
 n.years <- end.series - start.series
 n.indiv <- length(unique(indiv))
 
+## set up table relating individual indices to sites
+##
+site.table <- unique(data.frame(site=gi.data$site, id=gi.data$id))
+site <- site.table$site
+n.sites <- length(unique(site))
+
 ## prior on regression coefficients
 ##
 tau.beta <- 1.0
@@ -188,21 +197,37 @@ tmn <- standardize(tmn)
 jags.data <- c("gi",
                "year",
                "indiv",
+               "site",
                "ppt",
                "tmn",
                "n.obs",
                "n.years",
                "n.indiv",
+               "n.sites",
                "n.months",
                "tau.beta")
-jags.pars <- c("beta.0",
-               "beta.ppt",
-               "beta.tmn",
-               "mu.year",
-               "mu.indiv",
-               "mu.year.indiv",
-               "var.resid",
-               "var.indiv")
+if (check.residuals) {
+  jags.pars <- c("beta.0",
+                 "beta.ppt",
+                 "beta.tmn",
+                 "mu.year",
+                 "mu.indiv",
+                 "mu.site",
+                 "mu.year.indiv",
+                 "var.resid",
+                 "var.indiv",
+                 "var.site")
+} else {
+  jags.pars <- c("beta.0",
+                 "beta.ppt",
+                 "beta.tmn",
+                 "mu.year",
+                 "mu.indiv",
+                 "mu.site",
+                 "var.resid",
+                 "var.indiv",
+                 "var.site")
+}
 fit <- jags(data=jags.data,
             inits=NULL,
             parameters=jags.pars,
@@ -216,5 +241,5 @@ opt.old <- options(width=120)
 print(fit, digits.summary=3)
 options(opt.old)
 
-save(fit, n.months, gi, year, indiv, start.series, end.series,
-     file="results.Rsave")
+save(fit, n.months, gi, year, indiv, site, start.series, end.series,
+     check.residuals, file="results.Rsave")

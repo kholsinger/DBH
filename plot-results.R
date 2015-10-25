@@ -67,44 +67,69 @@ mu.indiv <- fit$BUGSoutput$sims.list$mu.indiv
 n.reps <- nrow(mu.indiv)
 n.inds <- ncol(mu.indiv)
 indivs <- seq(1, n.inds, by=1)
+site.id <- numeric(0)
 indiv <- numeric(0)
 value <- numeric(0)
-for (i in 2:n.inds) {
+for (i in 1:n.inds) {
+  site.id <- c(site.id, rep(site[i], n.reps))
   indiv <- c(indiv, rep(i, n.reps))
   value <- c(value, mu.indiv[,i])
 }
-for.plot <- data.frame(Individual=as.factor(indiv), Predicted=value)
+for.plot <- data.frame(Site=as.factor(site.id),
+                       Individual=as.factor(indiv),
+                       Predicted=value)
 
 p <- ggplot(for.plot, aes(x=Individual, y=Predicted)) +
+     geom_boxplot() +
+     facet_wrap(~ Site, scales="free_x")
+print(p)
+
+## variation across sites
+##
+mu.site <- fit$BUGSoutput$sims.list$mu.site
+n.reps <- nrow(mu.site)
+n.sites <- ncol(mu.site)
+sites <- seq(1, n.inds, by=1)
+site <- numeric(0)
+value <- numeric(0)
+for (i in 2:n.sites) {
+  site <- c(site, rep(i, n.reps))
+  value <- c(value, mu.site[,i])
+}
+for.plot <- data.frame(Site=as.factor(site), Predicted=value)
+
+p <- ggplot(for.plot, aes(x=Site, y=Predicted)) +
      geom_boxplot()
 print(p)
+
 
 ## residual plots (using posterior mean)
 ##
 ## reload data since year gets used above
 ##
-load(file=results.file)
-mu.year.indiv <- fit$BUGSoutput$mean$mu.year.indiv
-n.obs <- length(gi)
-Observed <- gi
-Predicted <- numeric(n.obs)
-Residual <- numeric(n.obs)
-for (i in 1:n.obs) {
-  Predicted[i] <- mu.year.indiv[year[i], indiv[i]]
+if (check.residuals) {
+  load(file=results.file)
+  mu.year.indiv <- fit$BUGSoutput$mean$mu.year.indiv
+  n.obs <- length(gi)
+  Observed <- gi
+  Predicted <- numeric(n.obs)
+  Residual <- numeric(n.obs)
+  for (i in 1:n.obs) {
+    Predicted[i] <- mu.year.indiv[year[i], indiv[i]]
+  }
+  Residual <- Observed - Predicted
+
+  for.plot <- data.frame(Observed=Observed, Predicted=Predicted,
+                         Residual=Residual)
+  for.plot <- subset(for.plot, !is.na(Observed))
+
+  p <- ggplot(for.plot, aes(x=Observed, y=Predicted)) +
+       geom_abline(intercept=0, slope=1, linetype="dashed") +
+       geom_point()
+  print(p)
+
+  p <- ggplot(for.plot, aes(x=Predicted, y=Residual)) +
+       geom_hline(yintercept=0, linetype="dashed") +
+       geom_point()
+  print(p)
 }
-Residual <- Observed - Predicted
-
-for.plot <- data.frame(Observed=Observed, Predicted=Predicted,
-                       Residual=Residual)
-for.plot <- subset(for.plot, !is.na(Observed))
-
-p <- ggplot(for.plot, aes(x=Observed, y=Predicted)) +
-     geom_abline(intercept=0, slope=1, linetype="dashed") +
-     geom_point()
-print(p)
-
-p <- ggplot(for.plot, aes(x=Predicted, y=Residual)) +
-     geom_hline(yintercept=0, linetype="dashed") +
-     geom_point()
-print(p)
-

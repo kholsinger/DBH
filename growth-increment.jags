@@ -1,5 +1,3 @@
-## Current model assumes data from only one site
-
 model {
   for (i in 1:n.obs) {
     gi[i] ~ dnorm(mu.year.indiv[year[i],indiv[i]], tau.resid)
@@ -14,12 +12,20 @@ model {
     }
   }
 
-  ## first individual used as baseline for comparison.
-  ## required for identifiability
+  ## individuals centered around population mean, i.e.,
+  ## individuals nested within sites
   ##
-  mu.indiv[1] <- 0.0
-  for (i in 2:n.indiv) {
-    mu.indiv[i] ~ dnorm(0.0, tau.indiv)
+  for (i in 1:n.indiv) {
+    mu.indiv[i] ~ dnorm(mu.site[site[i]], tau.indiv)
+  }
+
+  ## site means
+  ##
+  ## site 1 as baseline for identifiability
+  ##
+  mu.site[1] <- 0.0
+  for (i in 2:n.sites) {
+    mu.site[i] ~ dnorm(0.0, tau.site)
   }
 
   ## n.months is number of months of prior weather included in
@@ -40,6 +46,8 @@ model {
   }
   tau.resid ~ dgamma(1.0, 1.0)
   tau.indiv ~ dgamma(1.0, 1.0)
+  tau.site ~ dgamma(1.0, 1.0)
   var.resid <- 1.0/tau.resid
   var.indiv <- 1.0/tau.indiv
+  var.site <- 1.0/tau.site
 }
