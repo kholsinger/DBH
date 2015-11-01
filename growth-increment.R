@@ -1,6 +1,3 @@
-library(dplR)
-library(bootRes)
-library(pspline)
 library(reshape)
 library(R2jags)
 

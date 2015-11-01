@@ -1,0 +1,28 @@
+model {
+  ## likelihood
+  ##
+  for (i in 1:n.obs) {
+    covars[i,1:n.cov] ~ dmnorm(mu[1:n.cov], phi[1:n.cov,1:n.cov])
+  }
+
+  ## priors
+  ##
+  ## mean vector
+  ##
+  for (i in 1:n.cov) {
+    mu[i] ~ dnorm(0.0, tau)
+  }
+  ## precision matrix
+  ##
+  phi[1:n.cov,1:n.cov] ~ dwish(Omega[1:n.cov,1:n.cov], nu)
+  ## covariance and correlation matrices
+  ##
+  phx[1:n.cov,1:n.cov] <- inverse(phi[1:n.cov,1:n.cov])
+  for (i in 1:n.cov) {
+    rho[i,i] <- 1.0
+    for (j in (i+1):n.cov) {
+      rho[i,j] <- phx[i,j]/(sqrt(phx[i,i])*sqrt(phx[j,j]))
+      rho[j,i] <- rho[i,j]
+    }
+  }
+}

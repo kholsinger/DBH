@@ -1,3 +1,7 @@
+library(dplR)
+library(bootRes)
+library(pspline)
+
 ## load detr() and helper functions
 source("detr.R")
 source("allfunctionsdavid.v13.R")
