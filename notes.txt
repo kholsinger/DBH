@@ -1,0 +1,33 @@
+2015-11-08
+==========
+The DBH model is very simple, just a linear regression of the
+difference in DBH with size (T1_DBH) and height ratio as covariates
+and with random effects for plot and species.
+
+Questions
+* Is there a way to tie individuals in MCNallDBH.csv to individuals in
+  the RWL files in plot-data/?
+* Could we legitimately calculate a difference in DBH for the
+  individuals where we have growth increments by summing the growth
+  increments? If so, should we use the detrended data or the raw data?
+  (I'd be inclined to use the raw data, but what do I know?)
+* With only two times when DBH is measured, there isn't a way to
+  relate environment to the DBH difference, since there's only one
+  environment integrated over that time period (even though we have
+  monthly data). Do we have access to data with more than two time
+  periods at which DBH was measured? If not, we'll need data from
+  sites with different environmental covariates to make any progress.
+  In any case we'll have to restrict our attention to a number of
+  environmental covariates smaller than the number of time periods or
+  the number of sites (or their product if we have both).
+
+Before we start trying to tie the growth increment regression with the
+DBH regression, I'd like to see some data where we can include some
+environmental covariates to the DBH. That means either additional
+sites (with new PRISM data for each site) or additional time periods
+at this site. I'm guessing additional sites is our only option. Am I
+right?
+
+My thought would be to use results from the growth increment
+regression to identify a small number of covariates (averaged over
+appropriate time intervals) to include in the DBH regression.
