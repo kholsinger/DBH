@@ -1,0 +1,32 @@
+model {
+  for (i in 1:n.obs) {
+    dbh.inc[i] ~ dnorm(mu.indiv[i], tau.resid)
+    mu.indiv[i] <- beta.0 + beta.size*size[i]
+                   + beta.height.ratio*height.ratio[i]
+                   + eps.plot[plot[i]] + eps.species[species[i]]
+  }
+  ## random effects identified by setting first category in plot and species
+  ## to zero
+  ##
+  eps.plot[1] <- 0.0
+  for (i in 2:n.plots) {
+    eps.plot[i] ~ dnorm(0.0, tau.plot)
+  }
+  eps.species[1] <- 0.0
+  for (i in 2:n.species) {
+    eps.species[i] ~ dnorm(0.0, tau.species)
+  }
+  ## regression parameter priors
+  ##
+  beta.0 ~ dnorm(0.0, 1.0)
+  beta.size ~ dnorm(0.0, 1.0)
+  beta.height.ratio ~ dnorm(0.0, 1.0)
+  ## variance parameter priors
+  ##
+  tau.resid ~ dgamma(1.0, 1.0)
+  tau.plot ~ dgamma(1.0, 1.0)
+  tau.species ~ dgamma(1.0, 1.0)
+  var.resid <- 1.0/tau.resid
+  var.plot <- 1.0/tau.plot
+  var.species <- 1.0/tau.species
+}
