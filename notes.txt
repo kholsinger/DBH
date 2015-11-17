@@ -7,6 +7,8 @@ and with random effects for plot and species.
 Questions
 * Is there a way to tie individuals in MCNallDBH.csv to individuals in
   the RWL files in plot-data/?
+Yes, there is...
+
 * Could we legitimately calculate a difference in DBH for the
   individuals where we have growth increments by summing the growth
   increments? If so, should we use the detrended data or the raw data?
