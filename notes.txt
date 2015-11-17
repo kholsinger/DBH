@@ -7,7 +7,19 @@ and with random effects for plot and species.
 Questions
 * Is there a way to tie individuals in MCNallDBH.csv to individuals in
   the RWL files in plot-data/?
+
 Yes, there is...
+Take for example the first rwl file (containing tree ring data): 113.rwl
+The first line is labeled 1131366A1950
+The first 3 digits are the plot number (113)
+the following 4 digits are the tree number (1366)
+the letter A is a convention (normally there would be an A and B core for each tree,
+we only took one core per tree, so these are all labeled "A")
+and the last 4 digits are the decade label
+
+The tree number 1366 will be found in the csv file with the DBH data, in plot 113
+
+et viola...
 
 * Could we legitimately calculate a difference in DBH for the
   individuals where we have growth increments by summing the growth
