@@ -20,6 +20,7 @@ plots/*.pdf
 *.Rsave
 *.pdf
 *~
+*.png
 
 ## Ignore document directories
 ##
