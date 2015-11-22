@@ -4,6 +4,7 @@ library(plyr)
 rm(list=ls())
 
 debug <- FALSE
+measurement.error <- FALSE
 
 ## MCMC settings
 ##
@@ -53,15 +54,15 @@ dbh <- subset(dbh, Species!="UNK")
 ## correct typo in species name
 ##
 dbh$Species[dbh$Species=="PMSE"] <- "PSME"
+## analyze only PIPO, since sample sizes for others are so small
+##
+dbh <- subset(dbh, Species=="PIPO")
 ##
 ## get height ratio by plot and species
-## warnings turned off because of empty plot/species combinations
 ##
-ow <- options("warn" = -1)
-dbh.sum <- ddply(dbh, c("plot","Species"),
+dbh.sum <- ddply(dbh, c("plot"),
                  summarise,
                  max=max(Tree.height, na.rm=TRUE))
-options(ow)
 dbh <- merge(dbh, dbh.sum)
 dbh$height.ratio <- dbh$Tree.height/dbh$max
 rm(dbh.sum)
@@ -73,35 +74,50 @@ dbh <- droplevels(dbh)
 
 ## set up data vectors for JAGS analysis
 ##
-dbh.inc <- dbh$T2_DBH - dbh$T1_DBH
-size <- standardize(dbh$T1_DBH)
+dbh.1 <- standardize(dbh$T1_DBH)
+dbh.2 <- standardize(dbh$T2_DBH)
+dbh.inc <- standardize(dbh$T2_DBH - dbh$T1_DBH)
+size <- standardize(dbh$Tree.height)
 height.ratio <- standardize(dbh$height.ratio)
 plot <- as.numeric(dbh$plot)
-species <- as.numeric(dbh$Species)
 n.obs <- nrow(dbh)
 n.plots <- length(unique(dbh$plot))
 stopifnot(n.plots == max(plot))
-n.species <- length(unique(dbh$Species))
-stopifnot(n.species == max(species))
 
-jags.data <- c("dbh.inc",
-               "size",
-               "height.ratio",
-               "plot",
-               "species",
-               "n.obs",
-               "n.plots",
-               "n.species")
-jags.pars <- c("beta.0",
-               "beta.size",
-               "beta.height.ratio",
-               "var.resid",
-               "var.plot",
-               "var.species")
+if (measurement.error) {
+  jags.data <- c("dbh.1",
+                 "dbh.2",
+                 "size",
+                 "height.ratio",
+                 "plot",
+                 "n.obs",
+                 "n.plots")
+  jags.pars <- c("beta.0",
+                 "beta.size",
+                 "beta.height.ratio",
+                 "mu.indiv",
+                 "var.resid",
+                 "var.plot")
+  model.file <- "dbh-measurement-error.jags"
+} else {
+  jags.data <- c("dbh.inc",
+                 "size",
+                 "height.ratio",
+                 "plot",
+                 "n.obs",
+                 "n.plots")
+  jags.pars <- c("beta.0",
+                 "beta.size",
+                 "beta.height.ratio",
+                 "mu.indiv",
+                 "var.resid",
+                 "var.plot")
+  model.file <- "dbh.jags"
+}
 fit <- jags(data=jags.data,
             inits=NULL,
             parameters=jags.pars,
-            model.file="dbh.jags",
+            model.file=model.file,
             n.chains=n.chains,
             n.burnin=n.burnin,
             n.iter=n.iter,

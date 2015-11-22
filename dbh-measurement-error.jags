@@ -1,11 +1,12 @@
 model {
   for (i in 1:n.obs) {
-    dbh.inc[i] ~ dnorm(mu.indiv[i], tau.resid)
-    mu.indiv[i] <- beta.0 + beta.size*size[i]
-                   + beta.height.ratio*height.ratio[i]
-                   + eps.plot[plot[i]]
+    dbh.2[i] ~ dnorm(mu.indiv[i], tau.resid)
+    mu.indiv[i] <- dbh.1[i] + mu.dbh.inc[i]
+    log(mu.dbh.inc[i]) <- beta.0 + beta.size*size[i]
+                          + beta.height.ratio*height.ratio[i]
+                          + eps.plot[plot[i]]
   }
-  ## random effects identified by setting first category in plot and species
+  ## random effects identified by setting first category in plot
   ## to zero
   ##
   eps.plot[1] <- 0.0
