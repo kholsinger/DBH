@@ -4,20 +4,24 @@ library(plyr)
 rm(list=ls())
 
 debug <- FALSE
-measurement.error <- FALSE
+measurement.error <- TRUE
 
 ## MCMC settings
 ##
 n.burnin <- 1000
 n.iter <- 2000
 n.thin <- 1
+n.chains <- 5
+if (measurement.error) {
+  n.burnin <- 5000
+  n.iter <- 30000
+  n.thin <- 25
+}
 if (debug) {
   n.chains <- 2
   ## to allow replication of results across runs in JAGS
   ##
   set.seed(1)
-} else {
-  n.chains <- 5
 }
 
 standardize.vector <- function(x) {
@@ -40,7 +44,7 @@ standardize <- function(x) {
 
 ## read in the DBH data and convert plot to factor
 ##
-dbh <- read.csv("mCNallDBH.csv", header=TRUE)
+dbh <- read.csv("mCNallDBH2.csv", header=TRUE)
 dbh$plot <- as.factor(dbh$plot)
 ## exclude individuals without species label
 ##
@@ -72,6 +76,29 @@ rm(dbh.sum)
 dbh <- subset(dbh, !is.na(T1_DBH) & !is.na(T2_DBH) & !is.na(Tree.height))
 dbh <- droplevels(dbh)
 
+## read in and summarize radiation data
+##
+radiation <- read.csv("mcn_plots_rsun_hours_global_radiation_utm.csv",
+                      header=TRUE)
+radiation$total <- apply(radiation[,grep("total", colnames(radiation))], 1, sum)
+
+## read in and summarize DEM data
+##
+dem <- read.csv("mcn_plots_topographic_variables_SAGAGIS.csv")
+
+## merge radiation and DEM data into dbh
+##
+dbh <- merge(dbh, radiation, by.x="plot", by.y="ID")
+dbh <- merge(dbh, dem, by.x="plot", by.y="ID")
+
+## extract plot-level covariates and index
+plot.level <- data.frame(plot=dbh$plot,
+                         radiation=dbh$total,
+                         slope=dbh$Slope,
+                         aspect=dbh$Aspect,
+                         twi=dbh$TWI)
+plot.level <- unique(plot.level)
+
 ## set up data vectors for JAGS analysis
 ##
 dbh.1 <- standardize(dbh$T1_DBH)
@@ -80,6 +107,11 @@ dbh.inc <- standardize(dbh$T2_DBH - dbh$T1_DBH)
 size <- standardize(dbh$Tree.height)
 height.ratio <- standardize(dbh$height.ratio)
 plot <- as.numeric(dbh$plot)
+radiation <- standardize(plot.level$radiation)
+slope <- standardize(plot.level$slope)
+aspect <- standardize(plot.level$aspect)
+twi <- standardize(plot.level$twi)
+plot.idx <- as.numeric(plot.level$plot)
 n.obs <- nrow(dbh)
 n.plots <- length(unique(dbh$plot))
 stopifnot(n.plots == max(plot))
@@ -90,12 +122,20 @@ if (measurement.error) {
                  "size",
                  "height.ratio",
                  "plot",
+                 "radiation",
+                 "slope",
+                 "aspect",
+                 "twi",
                  "n.obs",
                  "n.plots")
   jags.pars <- c("beta.0",
                  "beta.size",
                  "beta.height.ratio",
-                 "mu.indiv",
+                 "gamma.radiation",
+                 "gamma.slope",
+                 "gamma.aspect",
+                 "gamma.twi",
+#                 "mu.indiv",
                  "var.resid",
                  "var.plot")
   model.file <- "dbh-measurement-error.jags"
