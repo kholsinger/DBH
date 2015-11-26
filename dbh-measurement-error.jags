@@ -2,17 +2,27 @@ model {
   for (i in 1:n.obs) {
     dbh.2[i] ~ dnorm(mu.indiv[i], tau.resid)
     mu.indiv[i] <- dbh.1[i] + mu.dbh.inc[i]
-    log(mu.dbh.inc[i]) <- eps.plot[plot[i]]
+    log(mu.dbh.inc[i]) <- beta.0
                           + beta.size*size[i]
                           + beta.height.ratio*height.ratio[i]
+                          + gamma.radiation*radiation[plot[i]]
+                          + gamma.slope*slope[plot[i]]
+                          + gamma.aspect*aspect[plot[i]]
+                          + gamma.twi*twi[plot[i]]
+                          + eps.species[species[i]]
+                          + eps.plot[plot[i]]
   }
-  for (i in 1:n.plots) {
-    eps.plot[i] ~ dnorm(mu.plot[i], tau.plot)
-    mu.plot[i] <- beta.0
-                  + gamma.radiation*radiation[i]
-                  + gamma.slope*slope[i]
-                  + gamma.aspect*aspect[i]
-                  + gamma.twi*twi[i]
+  ## set first plot effect to zero for identifiability
+  ##
+  eps.plot[1] <- 0.0
+  for (i in 2:n.plots) {
+    eps.plot[i] ~ dnorm(beta.0, tau.plot)
+  }
+  ## set first species effect to zero for identifiability
+  ##
+  eps.species[1] <- 0.0
+  for (i in 2:n.species) {
+    eps.species[i] ~ dnorm(0.0, tau.species)
   }
   ## regression parameter priors
   ##
@@ -27,6 +37,8 @@ model {
   ##
   tau.resid ~ dgamma(1.0, 1.0)
   tau.plot ~ dgamma(1.0, 1.0)
+  tau.species ~ dgamma(1.0, 1.0)
   var.resid <- 1.0/tau.resid
   var.plot <- 1.0/tau.plot
+  var.species <- 1.0/tau.species
 }

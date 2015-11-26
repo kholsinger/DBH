@@ -1,4 +1,4 @@
-library(R2jags)
+library(rstan)
 library(plyr)
 
 rm(list=ls())
@@ -60,7 +60,7 @@ dbh <- subset(dbh, Species!="UNK")
 dbh$Species[dbh$Species=="PMSE"] <- "PSME"
 ## exclude plot 154 for the time being
 ##
-dbh <- subset(dbh, plot!="154")
+## dbh <- subset(dbh, plot!="154")
 ## ## analyze only PIPO, since sample sizes for others are so small
 ## ##
 ## dbh <- subset(dbh, Species=="PIPO")
@@ -104,79 +104,57 @@ plot.level <- data.frame(plot=dbh$plot,
                          slope=dbh$Slope,
                          aspect=dbh$Aspect,
                          twi=dbh$TWI)
-plot.level <- unique(plot.level)
+## plot.level <- unique(plot.level)
 
-## set up data vectors for JAGS analysis
+## set up data vectors for Stan analysis
 ##
-dbh.1 <- standardize(dbh$T1_BasalArea)
-dbh.2 <- standardize(dbh$T2_BasalArea)
-dbh.inc <- standardize(dbh$T2_BasalArea - dbh$T1_BasalArea)
-size <- standardize(dbh$Tree.height)
-height.ratio <- standardize(dbh$height.ratio)
+dbh_1 <- standardize(dbh$T1_BasalArea)
+dbh_2 <- standardize(dbh$T2_BasalArea)
+dbh_inc <- standardize(dbh$T2_BasalArea - dbh$T1_BasalArea)
+tree_size <- standardize(dbh$Tree.height)
+height_ratio <- standardize(dbh$height.ratio)
 plot <- as.numeric(dbh$plot)
 species <- as.numeric(dbh$Species)
 radiation <- standardize(plot.level$radiation)
 slope <- standardize(plot.level$slope)
 aspect <- standardize(plot.level$aspect)
 twi <- standardize(plot.level$twi)
-n.obs <- nrow(dbh)
-n.plots <- length(unique(dbh$plot))
-stopifnot(n.plots == max(plot))
-n.species <- length(unique(dbh$Species))
-stopifnot(n.species == max(species))
+n_obs <- nrow(dbh)
+n_plots <- length(unique(dbh$plot))
+stopifnot(n_plots == max(plot))
+n_species <- length(unique(dbh$Species))
+stopifnot(n_species == max(species))
 
-if (measurement.error) {
-  jags.data <- c("dbh.1",
-                 "dbh.2",
-                 "size",
-                 "height.ratio",
-                 "plot",
-                 "species",
-                 "radiation",
-                 "slope",
-                 "aspect",
-                 "twi",
-                 "n.obs",
-                 "n.plots",
-                 "n.species")
-  jags.pars <- c("beta.0",
-                 "beta.size",
-                 "beta.height.ratio",
-                 "gamma.radiation",
-                 "gamma.slope",
-                 "gamma.aspect",
-                 "gamma.twi",
-#                 "mu.indiv",
-                 "var.resid",
-                 "var.plot",
-                 "var.species")
-  model.file <- "dbh-measurement-error.jags"
-} else {
-  jags.data <- c("dbh.inc",
-                 "size",
-                 "height.ratio",
-                 "plot",
-                 "n.obs",
-                 "n.plots")
-  jags.pars <- c("beta.0",
-                 "beta.size",
-                 "beta.height.ratio",
-                 "mu.indiv",
-                 "var.resid",
-                 "var.plot")
-  model.file <- "dbh.jags"
-}
-fit <- jags(data=jags.data,
-            inits=NULL,
-            parameters=jags.pars,
-            model.file=model.file,
-            n.chains=n.chains,
-            n.burnin=n.burnin,
-            n.iter=n.iter,
-            n.thin=n.thin,
-            working.directory=".")
+stan.data <- list(n_obs=n_obs,
+                  n_plots=n_plots,
+                  n_species=n_species,
+                  dbh_1=dbh_1,
+                  dbh_2=dbh_2,
+                  tree_size=tree_size,
+                  height_ratio=height_ratio,
+                  radiation=radiation,
+                  slope=slope,
+                  aspect=aspect,
+                  twi=twi,
+                  plot=plot,
+                  species=species)
+stan.par <- c("beta_0",
+              "beta_size",
+              "beta_height_ratio",
+              "gamma_radiation",
+              "gamma_slope",
+              "gamma_aspect",
+              "gamma_twi",
+              "sigma_resid",
+              "sigma_plot",
+              "sigma_species")
+
+fit <- stan(file="dbh.stan",
+            data=stan.data,
+            pars=stan.par,
+            chains=n.chains)
 opt.old <- options(width=120)
-print(fit, digits.summary=3)
+print(fit, digits_summary=3)
 options(opt.old)
 
 
