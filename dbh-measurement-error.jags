@@ -1,9 +1,8 @@
 model {
   for (i in 1:n.obs) {
     dbh.2[i] ~ dnorm(mu.indiv[i], tau.resid)
-    mu.indiv[i] <- dbh.1[i] + mu.dbh.inc[i]
-    log(mu.dbh.inc[i]) <- beta.0
-                          + beta.size*size[i]
+    mu.indiv[i] <- dbh.1[i] + exp(log.mu.dbh.inc[i])
+    log.mu.dbh.inc[i] <- beta.size*size[i]
                           + beta.height.ratio*height.ratio[i]
                           + gamma.radiation*radiation[plot[i]]
                           + gamma.slope*slope[plot[i]]
@@ -12,17 +11,13 @@ model {
                           + eps.species[species[i]]
                           + eps.plot[plot[i]]
   }
-  ## set first plot effect to zero for identifiability
-  ##
-  eps.plot[1] <- 0.0
-  for (i in 2:n.plots) {
-    eps.plot[i] ~ dnorm(beta.0, tau.plot)
+  for (i in 1:n.plots) {
+    eps.plot[i] ~ dnorm(0.0, tau.plot)
   }
   ## set first species effect to zero for identifiability
   ##
-  eps.species[1] <- 0.0
-  for (i in 2:n.species) {
-    eps.species[i] ~ dnorm(0.0, tau.species)
+  for (i in 1:n.species) {
+    eps.species[i] ~ dnorm(beta.0, tau.species)
   }
   ## regression parameter priors
   ##

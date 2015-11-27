@@ -32,12 +32,11 @@ transformed parameters {
   vector[n_obs] log_mu_dbh_inc;
 
   for (i in 1:n_obs) {
-    log_mu_dbh_inc[i] <- beta_0
-                         + beta_size*tree_size[i]
+    log_mu_dbh_inc[i] <- beta_size*tree_size[i]
                          + beta_height_ratio*height_ratio[i]
                          + gamma_radiation*radiation[plot[i]]
                          + gamma_slope*slope[plot[i]]
-                         + gamma_slope*aspect[plot[i]]
+                         + gamma_aspect*aspect[plot[i]]
                          + gamma_twi*twi[plot[i]]
                          + eps_species[species[i]]
                          + eps_plot[plot[i]];
@@ -56,7 +55,7 @@ model {
   sigma_plot ~ normal(0.0, 1.0);
   sigma_species ~ normal(0.0, 1.0);
 
-  eps_species ~ normal(0.0, sigma_species);
+  eps_species ~ normal(beta_0, sigma_species);
   eps_plot ~ normal(0.0, sigma_plot);
   dbh_2 ~ normal(mu_indiv, sigma_resid);
 }
