@@ -8,6 +8,10 @@
 *.Rproj
 .Rapp.history
 
+## Stan files to ignore
+##
+*.rda
+
 ## Directories and files from Margaret to ignore
 ##
 climate-correlations/*

@@ -87,7 +87,9 @@ fit <- stan(file="growth-increment.stan",
             warmup=n.burnin,
             thin=n.thin,
             chains=n.chains,
-            cores=n.cores)
+            cores=n.cores,
+            control=list(adapt_delta=0.95,
+                         max_treedepth=20))
 opt.old <- options(width=120)
 print(fit, digits_summary=3)
 options(opt.old)
