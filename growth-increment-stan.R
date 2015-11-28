@@ -18,7 +18,7 @@ if (debug) {
 }
 
 rstan_options(auto_write = TRUE)
-n.cores = parallel::detectCores()
+n.cores <- parallel::detectCores()
 
 ## select last k rows from x
 ##
@@ -93,5 +93,5 @@ print(fit, digits_summary=3)
 options(opt.old)
 
 save(fit, n.months, gi, year, indiv, site, start.series, end.series,
-     check.residuals, file="results-stan.Rsave")
+     file="results-stan.Rsave")
 
