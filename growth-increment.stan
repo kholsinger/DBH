@@ -59,11 +59,11 @@ model {
   // individuals nested within sites
   //
   for (i in 1:n_indiv) {
-    mu_indiv[i] ~ normal(mu_site[site[i]], sigma_indiv);
+    mu_indiv[i] ~ normal(0.0, sigma_indiv);
   }
   // site means
   //
-  mu_site ~ normal(beta_0, sigma_site);
+  mu_site ~ normal(0.0, sigma_site);
   // individual site x year combinations
   //
   for (i in 1:n_obs) {
