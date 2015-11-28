@@ -16,7 +16,6 @@ final.month <- 8
 ## n.months: number of months included as covariates
 ##
 n.months <- 20
-
 ## set data path
 plot.data.path <- "plot-data"
 
@@ -103,7 +102,8 @@ gi.data <- subset(gi.data, yr <= end.series)
 gi.data$yr <- gi.data$yr - start.series
 ## exclude growth increments with estimate <= 0
 ##
-gi.data <- subset(gi.data, gi > 0)
+##gi.data <- subset(gi.data, gi > 0)
+gi.data <- subset(gi.data, !is.na(gi))
 ##
 ## extract for JAGS
 ##

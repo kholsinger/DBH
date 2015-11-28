@@ -6,10 +6,10 @@ data {
   vector[n_obs] dbh_1;
   vector[n_obs] tree_size;
   vector[n_obs] height_ratio;
-  vector[n_obs] radiation;
-  vector[n_obs] slope;
-  vector[n_obs] aspect;
-  vector[n_obs] twi;
+  vector[n_plots] radiation;
+  vector[n_plots] slope;
+  vector[n_plots] aspect;
+  vector[n_plots] twi;
   int<lower=0> plot[n_obs];
   int<lower=0> species[n_obs];
 }
@@ -30,14 +30,18 @@ parameters {
 transformed parameters {
   vector[n_obs] mu_indiv;
   vector[n_obs] log_mu_dbh_inc;
+  vector[n_plots] mu_eps_plot;
 
+  for (i in 1:n_plots) {
+    mu_eps_plot[i] <- beta_0
+                      + gamma_radiation*radiation[i]
+                      + gamma_slope*slope[i]
+                      + gamma_aspect*aspect[i]
+                      + gamma_twi*twi[i];
+  }
   for (i in 1:n_obs) {
     log_mu_dbh_inc[i] <- beta_size*tree_size[i]
                          + beta_height_ratio*height_ratio[i]
-                         + gamma_radiation*radiation[plot[i]]
-                         + gamma_slope*slope[plot[i]]
-                         + gamma_aspect*aspect[plot[i]]
-                         + gamma_twi*twi[plot[i]]
                          + eps_species[species[i]]
                          + eps_plot[plot[i]];
   }
@@ -56,13 +60,6 @@ model {
   sigma_species ~ normal(0.0, 1.0);
 
   eps_species ~ normal(0.0, sigma_species);
-  eps_plot ~ normal(beta_0, sigma_plot);
+  eps_plot ~ normal(mu_eps_plot, sigma_plot);
   dbh_2 ~ normal(mu_indiv, sigma_resid);
-}
-generated quantities {
-  real var_ratio;
-  real plot_eff_n;
-
-  var_ratio <- (sigma_plot^2.0)/(sigma_resid^2.0);
-  plot_eff_n <- 1.0/var_ratio;
 }

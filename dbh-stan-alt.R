@@ -8,11 +8,20 @@ measurement.error <- TRUE
 
 ## MCMC settings
 ##
+n.burnin <- 1000
+n.iter <- 2000
+n.thin <- 1
 n.chains <- 5
+if (measurement.error) {
+  n.burnin <- 5000
+  n.iter <- 30000
+  n.thin <- 25
+}
 if (debug) {
   n.chains <- 2
   ## to allow replication of results across runs in JAGS
   ##
+  set.seed(1)
 }
 
 source("dbh-process-data.R")
@@ -26,15 +35,18 @@ tree_size <- standardize(dbh$Tree.height)
 height_ratio <- standardize(dbh$height.ratio)
 plot <- as.numeric(dbh$plot)
 species <- as.numeric(dbh$Species)
-radiation <- standardize(plot.level$radiation)
-slope <- standardize(plot.level$slope)
-aspect <- standardize(plot.level$aspect)
-twi <- standardize(plot.level$twi)
 n_obs <- nrow(dbh)
 n_plots <- length(unique(dbh$plot))
 stopifnot(n_plots == max(plot))
 n_species <- length(unique(dbh$Species))
 stopifnot(n_species == max(species))
+## plot level variables need to be reduced to plot level
+##
+plot.level <- unique(plot.level)
+radiation <- standardize(plot.level$radiation)
+slope <- standardize(plot.level$slope)
+aspect <- standardize(plot.level$aspect)
+twi <- standardize(plot.level$twi)
 
 stan.data <- list(n_obs=n_obs,
                   n_plots=n_plots,
@@ -60,11 +72,9 @@ stan.par <- c("beta_0",
               "sigma_plot",
               "sigma_species",
               "eps_plot",
-              "eps_species",
-              "var_ratio",
-              "plot_eff_n")
+              "eps_species")
 
-fit <- stan(file="dbh.stan",
+fit <- stan(file="dbh-alt.stan",
             data=stan.data,
             pars=stan.par,
             chains=n.chains)

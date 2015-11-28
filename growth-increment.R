@@ -8,16 +8,22 @@ check.residuals <- FALSE
 
 ## MCMC settings
 ##
-n.burnin <- 1000
-n.iter <- 2000
+n.burnin <- 1250
+n.iter <- 2500
 n.thin <- 1
+n.chains <- 4
 if (debug) {
   n.chains <- 2
   ## to allow replication of results across runs in JAGS
   ##
   set.seed(1)
-} else {
-  n.chains <- 5
+}
+
+## select last k rows from x
+##
+select.rows <- function(x, k) {
+  y <- x[seq(nrow(ppt)-(k-1),nrow(ppt)),]
+  return(y)
 }
 
 source("prepare-data.R")
@@ -44,12 +50,19 @@ gi <- standardize(gi)
 ppt <- standardize(ppt)
 tmn <- standardize(tmn)
 
+## calculate means for last decade for index calculation
+##
+ppt.mean <- apply(select.rows(ppt, 10), 2, mean)
+tmn.mean <- apply(select.rows(tmn, 10), 2, mean)
+
 jags.data <- c("gi",
                "year",
                "indiv",
                "site",
                "ppt",
                "tmn",
+               "ppt.mean",
+               "tmn.mean",
                "n.obs",
                "n.years",
                "n.indiv",
@@ -66,7 +79,8 @@ if (check.residuals) {
                  "mu.year.indiv",
                  "var.resid",
                  "var.indiv",
-                 "var.site")
+                 "var.site",
+                 "idx.site")
 } else {
   jags.pars <- c("beta.0",
                  "beta.ppt",
@@ -76,7 +90,8 @@ if (check.residuals) {
                  "mu.site",
                  "var.resid",
                  "var.indiv",
-                 "var.site")
+                 "var.site",
+                 "idx.site")
 }
 fit <- jags(data=jags.data,
             inits=NULL,

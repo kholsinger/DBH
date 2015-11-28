@@ -21,19 +21,15 @@ model {
 
   ## site means
   ##
-  ## site 1 as baseline for identifiability
-  ##
-  mu.site[1] <- 0.0
-  for (i in 2:n.sites) {
-    mu.site[i] ~ dnorm(0.0, tau.site)
+  for (i in 1:n.sites) {
+    mu.site[i] ~ dnorm(beta.0, tau.site)
   }
 
   ## n.months is number of months of prior weather included in
   ## calculating expectation
   ##
   for (i in 1:n.years) {
-    mu.year[i] <- beta.0 +
-                  inprod(beta.ppt[1:n.months], ppt[i,1:n.months]) +
+    mu.year[i] <- inprod(beta.ppt[1:n.months], ppt[i,1:n.months]) +
                   inprod(beta.tmn[1:n.months], tmn[i,1:n.months])
   }
 
@@ -50,4 +46,12 @@ model {
   var.resid <- 1.0/tau.resid
   var.indiv <- 1.0/tau.indiv
   var.site <- 1.0/tau.site
+
+  ## site indices
+  ##
+  for (i in 1:n.sites) {
+    idx.site[i] <- inprod(beta.ppt[1:n.months], ppt.mean[1:n.months]) +
+                   inprod(beta.tmn[1:n.months], tmn.mean[1:n.months]) +
+                   mu.site[i];
+  }
 }

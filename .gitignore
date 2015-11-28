@@ -6,6 +6,7 @@
 ##
 .Rproj*
 *.Rproj
+.Rapp.history
 
 ## Directories and files from Margaret to ignore
 ##
