@@ -4,7 +4,6 @@ library(R2jags)
 rm(list=ls())
 
 debug <- FALSE
-check.residuals <- FALSE
 
 ## MCMC settings
 ##
@@ -27,18 +26,6 @@ select.rows <- function(x, k) {
 }
 
 source("prepare-data.R")
-
-## set counts
-##
-n.obs <- length(gi)
-n.years <- end.series - start.series
-n.indiv <- length(unique(indiv))
-
-## set up table relating individual indices to sites
-##
-site.table <- unique(data.frame(site=gi.data$site, id=gi.data$id))
-site <- site.table$site
-n.sites <- length(unique(site))
 
 ## prior on regression coefficients
 ##
@@ -69,30 +56,16 @@ jags.data <- c("gi",
                "n.sites",
                "n.months",
                "tau.beta")
-if (check.residuals) {
-  jags.pars <- c("beta.0",
-                 "beta.ppt",
-                 "beta.tmn",
-                 "mu.year",
-                 "mu.indiv",
-                 "mu.site",
-                 "mu.year.indiv",
-                 "var.resid",
-                 "var.indiv",
-                 "var.site",
-                 "idx.site")
-} else {
-  jags.pars <- c("beta.0",
-                 "beta.ppt",
-                 "beta.tmn",
-                 "mu.year",
-                 "mu.indiv",
-                 "mu.site",
-                 "var.resid",
-                 "var.indiv",
-                 "var.site",
-                 "idx.site")
-}
+jags.pars <- c("beta.0",
+               "beta.ppt",
+               "beta.tmn",
+               "mu.year",
+               "mu.indiv",
+               "mu.site",
+               "var.resid",
+               "var.indiv",
+               "var.site",
+               "idx.site")
 fit <- jags(data=jags.data,
             inits=NULL,
             parameters=jags.pars,
@@ -107,4 +80,4 @@ print(fit, digits.summary=3)
 options(opt.old)
 
 save(fit, n.months, gi, year, indiv, site, start.series, end.series,
-     check.residuals, file="results.Rsave")
+     file="results.Rsave")

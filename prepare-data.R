@@ -100,9 +100,8 @@ gi.data <- reshape(data,
                    direction="long")
 gi.data <- subset(gi.data, yr <= end.series)
 gi.data$yr <- gi.data$yr - start.series
-## exclude growth increments with estimate <= 0
+## exclude growth increments without observations
 ##
-##gi.data <- subset(gi.data, gi > 0)
 gi.data <- subset(gi.data, !is.na(gi))
 ##
 ## extract for JAGS
@@ -110,6 +109,18 @@ gi.data <- subset(gi.data, !is.na(gi))
 gi <- gi.data$gi
 year <- gi.data$yr
 indiv <- as.numeric(as.factor(gi.data$id))
+
+## set counts
+##
+n.obs <- length(gi)
+n.years <- end.series - start.series
+n.indiv <- length(unique(indiv))
+
+## set up table relating individual indices to sites
+##
+site.table <- unique(data.frame(site=gi.data$site, id=indiv))
+site <- as.numeric(site.table$site)
+n.sites <- length(unique(site))
 
 ## weather data by year
 ##

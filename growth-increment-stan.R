@@ -29,22 +29,6 @@ select.rows <- function(x, k) {
 
 source("prepare-data.R")
 
-## set counts
-##
-n.obs <- length(gi)
-n.years <- end.series - start.series
-n.indiv <- length(unique(indiv))
-
-## set up table relating individual indices to sites
-##
-site.table <- unique(data.frame(site=gi.data$site, id=gi.data$id))
-site <- as.numeric(site.table$site)
-n.sites <- length(unique(site))
-
-## prior on regression coefficients
-##
-tau.beta <- 1.0
-
 ## standardize response variable and covariates before JAGS analysis
 ##
 gi <- standardize(gi)
@@ -55,6 +39,10 @@ tmn <- standardize(tmn)
 ##
 ppt_mean <- apply(select.rows(ppt, 10), 2, mean)
 tmn_mean <- apply(select.rows(tmn, 10), 2, mean)
+
+## d.f. for student t in robust regression
+##
+nu <- 2
 
 stan.data <- list(gi=gi,
                   year=year,
@@ -68,7 +56,50 @@ stan.data <- list(gi=gi,
                   n_years=n.years,
                   n_indiv=n.indiv,
                   n_sites=n.sites,
-                  n_months=n.months)
+                  n_months=n.months,
+                  nu=nu)
+stan.pars <- c("beta_ppt",
+               "beta_tmn",
+               "mu_year",
+               "mu_indiv",
+               "sigma_resid",
+               "sigma_indiv",
+               "idx_site",
+               "log_lik")
+
+fit.stan.no.site <- stan(file="growth-increment.stan",
+                         data=stan.data,
+                         pars=stan.pars,
+                         iter=n.iter,
+                         warmup=n.burnin,
+                         thin=n.thin,
+                         chains=n.chains,
+                         cores=n.cores,
+                         control=list(adapt_delta=0.95,
+                           max_treedepth=20))
+opt.old <- options(width=120)
+sink("results-stan.txt")
+cat("Without site effect...\n",
+    "**********************\n")
+print(fit.stan.no.site,
+      pars=c("beta_ppt", "beta_tmn", "sigma_resid", "sigma_indiv"),
+      digits_summary=3)
+sink()
+options(opt.old)
+
+stan.data <- list(gi=gi,
+                  year=year,
+                  indiv=indiv,
+                  ppt=ppt,
+                  tmn=tmn,
+                  ppt_mean=ppt_mean,
+                  tmn_mean=tmn_mean,
+                  n_obs=n.obs,
+                  n_years=n.years,
+                  n_indiv=n.indiv,
+                  n_sites=n.sites,
+                  n_months=n.months,
+                  nu=nu)
 stan.pars <- c("beta_0",
                "beta_ppt",
                "beta_tmn",
@@ -78,22 +109,31 @@ stan.pars <- c("beta_0",
                "sigma_resid",
                "sigma_indiv",
                "sigma_site",
-               "idx_site")
-
-fit <- stan(file="growth-increment.stan",
-            data=stan.data,
-            pars=stan.pars,
-            iter=n.iter,
-            warmup=n.burnin,
-            thin=n.thin,
-            chains=n.chains,
-            cores=n.cores,
-            control=list(adapt_delta=0.95,
-                         max_treedepth=20))
+               "idx_site",
+               "log_lik")
+fit.stan.with.site <- stan(file="growth-increment-with-site.stan",
+                           data=stan.data,
+                           pars=stan.pars,
+                           iter=n.iter,
+                           warmup=n.burnin,
+                           thin=n.thin,
+                           chains=n.chains,
+                           cores=n.cores,
+                           control=list(adapt_delta=0.95,
+                             max_treedepth=20))
 opt.old <- options(width=120)
-print(fit, digits_summary=3)
+sink("results-stan.txt", append=TRUE)
+cat("\n\n\n\n",
+    "With site effect...\n",
+    "**********************\n")
+print(fit.stan.with.site,
+      pars=c("beta_ppt", "beta_tmn", "sigma_resid", "sigma_indiv", "sigma_site"),
+      digits_summary=3)
+sink()
 options(opt.old)
 
-save(fit, n.months, gi, year, indiv, site, start.series, end.series,
+save(fit.stan.no.site,
+     fit.stan.with.site,
+     n.months, gi, year, indiv, site, start.series, end.series,
      file="results-stan.Rsave")
 
