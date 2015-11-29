@@ -27,10 +27,6 @@ select.rows <- function(x, k) {
 
 source("prepare-data.R")
 
-## prior on regression coefficients
-##
-tau.beta <- 1.0
-
 ## standardize response variable and covariates before JAGS analysis
 ##
 gi <- standardize(gi)
@@ -41,6 +37,14 @@ tmn <- standardize(tmn)
 ##
 ppt.mean <- apply(select.rows(ppt, 10), 2, mean)
 tmn.mean <- apply(select.rows(tmn, 10), 2, mean)
+
+## prior for precision gon regression coefficients
+##
+tau.beta <- 1.0
+
+## d.f. for student t in robust regression
+##
+nu <- 2
 
 jags.data <- c("gi",
                "year",
@@ -55,7 +59,8 @@ jags.data <- c("gi",
                "n.indiv",
                "n.sites",
                "n.months",
-               "tau.beta")
+               "tau.beta",
+               "nu")
 jags.pars <- c("beta.0",
                "beta.ppt",
                "beta.tmn",
