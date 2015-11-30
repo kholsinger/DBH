@@ -67,26 +67,6 @@ stan.pars <- c("beta_ppt",
                "idx_site",
                "log_lik")
 
-fit.stan.no.site <- stan(file="growth-increment.stan",
-                         data=stan.data,
-                         pars=stan.pars,
-                         iter=n.iter,
-                         warmup=n.burnin,
-                         thin=n.thin,
-                         chains=n.chains,
-                         cores=n.cores,
-                         control=list(adapt_delta=0.95,
-                           max_treedepth=20))
-opt.old <- options(width=120)
-sink("results-stan.txt")
-cat("Without site effect...\n",
-    "**********************\n")
-print(fit.stan.no.site,
-      pars=c("beta_ppt", "beta_tmn", "sigma_resid", "sigma_indiv"),
-      digits_summary=3)
-sink()
-options(opt.old)
-
 stan.data <- list(gi=gi,
                   year=year,
                   indiv=indiv,
@@ -111,29 +91,25 @@ stan.pars <- c("beta_0",
                "sigma_site",
                "idx_site",
                "log_lik")
-fit.stan.with.site <- stan(file="growth-increment-with-site.stan",
-                           data=stan.data,
-                           pars=stan.pars,
-                           iter=n.iter,
-                           warmup=n.burnin,
-                           thin=n.thin,
-                           chains=n.chains,
-                           cores=n.cores,
-                           control=list(adapt_delta=0.95,
-                             max_treedepth=20))
+fit <- stan(file="growth-increment-with-site.stan",
+            data=stan.data,
+            pars=stan.pars,
+            iter=n.iter,
+            warmup=n.burnin,
+            thin=n.thin,
+            chains=n.chains,
+            cores=n.cores,
+            control=list(adapt_delta=0.95,
+              max_treedepth=20))
 opt.old <- options(width=120)
 sink("results-stan.txt", append=TRUE)
 cat("\n\n\n\n",
-    "With site effect...\n",
-    "**********************\n")
-print(fit.stan.with.site,
+    "With site effect (and inverse gamma priors...\n",
+    "*********************************************\n",
+    sep="")
+print(fit,
       pars=c("beta_ppt", "beta_tmn", "sigma_resid", "sigma_indiv", "sigma_site"),
       digits_summary=3)
 sink()
 options(opt.old)
-
-save(fit.stan.no.site,
-     fit.stan.with.site,
-     n.months, gi, year, indiv, site, start.series, end.series,
-     file="results-stan.Rsave")
 

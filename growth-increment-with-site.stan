@@ -22,13 +22,26 @@ parameters {
   vector[n_indiv] mu_indiv;
   vector[n_sites] mu_site;
   real beta_0;
-  real<lower=0> sigma_resid;
-  real<lower=0> sigma_indiv;
-  real<lower=0> sigma_site;
+  real<lower=0> tau_resid;
+  real<lower=0> tau_indiv;
+  real<lower=0> tau_site;
 }
 transformed parameters {
   matrix[n_years,n_indiv] mu_year_indiv;
   vector[n_years] mu_year;
+  real<lower=0> sigma_resid;
+  real<lower=0> sigma_indiv;
+  real<lower=0> sigma_site;
+  real<lower=0> var_resid;
+  real<lower=0> var_indiv;
+  real<lower=0> var_site;
+
+  var_resid <- 1.0/tau_resid;
+  var_indiv <- 1.0/tau_indiv;
+  var_site <- 1.0/tau_site;
+  sigma_resid <- sqrt(var_resid);
+  sigma_indiv <- sqrt(var_indiv);
+  sigma_site <- sqrt(var_site);
 
   // n_months is number of months of prior weather included in
   // calculating expectation
@@ -51,9 +64,9 @@ model {
   beta_0 ~ normal(0.0, 1.0);
   beta_ppt ~ normal(0.0, 1.0);
   beta_tmn ~ normal(0.0, 1.0);
-  sigma_resid ~ cauchy(0.0, 2.5);
-  sigma_indiv ~ cauchy(0.0, 2.5);
-  sigma_site ~ cauchy(0.0, 2.5);
+  tau_resid ~ gamma(1.0, 1.0);
+  tau_indiv ~ gamma(1.0, 1.0);
+  tau_site ~ gamma(1.0, 1.0);
 
   // likelihood
   //
