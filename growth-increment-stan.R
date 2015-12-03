@@ -85,7 +85,7 @@ cat("\n\n\n\n",
     "**********************************************\n",
     sep="")
 print(fit,
-      pars=c("beta_ppt", "beta_tmn", "sigma_resid", "sigma_indiv", "sigma_site"),
+      pars=c("beta_ppt", "beta_tmn", "var_resid", "var_indiv", "var_site"),
       digits_summary=3)
 sink()
 options(opt.old)
