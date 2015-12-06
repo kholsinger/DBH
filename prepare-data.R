@@ -2,6 +2,8 @@ library(dplR)
 library(bootRes)
 library(pspline)
 
+use.detrended <- FALSE
+
 ## load detr() and helper functions
 source("detr.R")
 source("allfunctionsdavid.v13.R")
@@ -56,10 +58,15 @@ for(i in 1:length(files)) {
   data.tr[[i]] <- ts(a[,1:ncol(a)],
                      start = as.numeric(rownames(a)[1]),
                      frequency = 1)
-  data.tr.det[[i]] <- detr(data.tr[[i]],10)
-  data.tr.det[[i]] <- window(data.tr.det[[i]],
-                             start=start.series+1,
-                             end=end.series)
+  data.tr[[i]] <- window(data.tr[[i]],
+                         start=start.series+1,
+                         end=end.series)
+  if (use.detrended) {
+    data.tr.det[[i]] <- detr(data.tr[[i]],10)
+    data.tr.det[[i]] <- window(data.tr.det[[i]],
+                               start=start.series+1,
+                               end=end.series)
+  }
 }
 
 ## climate data
@@ -81,10 +88,18 @@ rm(prism, vpd, vpd81)
 
 ## translate data into format required for JAGS analysis
 ##
-data <- data.frame(t(data.tr.det[[1]]), site=files[1])
-for (i in 2:length(data.tr.det)) {
-  tmp.data <- data.frame(t(data.tr.det[[i]]), site=files[i])
-  data <- rbind(data, tmp.data)
+if (use.detrended) {
+  data <- data.frame(t(data.tr.det[[1]]), site=files[1])
+  for (i in 2:length(data.tr.det)) {
+    tmp.data <- data.frame(t(data.tr.det[[i]]), site=files[i])
+    data <- rbind(data, tmp.data)
+  }
+} else {
+  data <- data.frame(t(data.tr[[1]]), site=files[1])
+  for (i in 2:length(data.tr.det)) {
+    tmp.data <- data.frame(t(data.tr[[i]]), site=files[i])
+    data <- rbind(data, tmp.data)
+  }
 }
 colnames(data) <- c(seq(from=start.series+1, to=end.series+1, by=1), "site")
 data$"2014" <- 2014

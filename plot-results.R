@@ -1,17 +1,32 @@
-library(R2jags)
 library(ggplot2)
 library(reshape)
 
 rm(list=ls())
 
-results.file <- "results.Rsave"
+check.residuals <- TRUE
+JAGS <- FALSE
+
+if (JAGS) {
+  results.file <- "results.Rsave"
+} else {
+  results.file <- "results-stan.Rsave"
+}
 load(file=results.file)
 
 ## coefficient plots
 ##
-beta.0 <- fit$BUGSoutput$sims.list$beta.0
-beta.ppt <- fit$BUGSoutput$sims.list$beta.ppt
-beta.tmn <- fit$BUGSoutput$sims.list$beta.tmn
+if (JAGS) {
+  library(R2jags)
+  beta.0 <- fit$BUGSoutput$sims.list$beta.0
+  beta.ppt <- fit$BUGSoutput$sims.list$beta.ppt
+  beta.tmn <- fit$BUGSoutput$sims.list$beta.tmn
+} else {
+  library(rstan)
+  pars <- extract(fit, pars=c("beta_0", "beta_ppt", "beta_tmn"))
+  beta.0 <- pars$beta_0
+  beta.ppt <- pars$beta_ppt
+  beta.tmn <- pars$beta_tmn
+}
 
 n.reps <- nrow(beta.0)
 
@@ -45,7 +60,11 @@ print(p)
 
 ## variation across years
 ##
-mu.year <- fit$BUGSoutput$sims.list$mu.year
+if (JAGS) {
+  mu.year <- fit$BUGSoutput$sims.list$mu.year
+} else {
+  mu.year <- extract(fit, "mu_year")$mu_year
+}
 n.reps <- nrow(mu.year)
 n.yrs <- ncol(mu.year)
 years <- seq(start.series+1, end.series, by=1)
@@ -63,7 +82,11 @@ print(p)
 
 ## variation across individuals
 ##
-mu.indiv <- fit$BUGSoutput$sims.list$mu.indiv
+if (JAGS) {
+  mu.indiv <- fit$BUGSoutput$sims.list$mu.indiv
+} else {
+  mu.indiv <- extract(fit, "mu_indiv")$mu_indiv
+}
 n.reps <- nrow(mu.indiv)
 n.inds <- ncol(mu.indiv)
 indivs <- seq(1, n.inds, by=1)
@@ -86,7 +109,11 @@ print(p)
 
 ## variation across sites
 ##
-mu.site <- fit$BUGSoutput$sims.list$mu.site
+if (JAGS) {
+  mu.site <- fit$BUGSoutput$sims.list$mu.site
+} else {
+  mu.site <- extract(fit, "mu_site")$mu_site
+}
 n.reps <- nrow(mu.site)
 n.sites <- ncol(mu.site)
 sites <- seq(1, n.inds, by=1)
@@ -109,7 +136,18 @@ print(p)
 ##
 if (check.residuals) {
   load(file=results.file)
-  mu.year.indiv <- fit$BUGSoutput$mean$mu.year.indiv
+  if (JAGS) {
+    mu.year.indiv <- fit$BUGSoutput$mean$mu.year.indiv
+  } else {
+    mu.year.indiv.sims <- extract(fit, c("mu_year_indiv"))$mu_year_indiv
+    dims <- dim(mu.year.indiv.sims)
+    mu.year.indiv <- matrix(nrow=dims[2], ncol=dims[3])
+    for (i in 1:dims[2]) {
+      for (j in 1:dims[3]) {
+        mu.year.indiv[i,j] <- mean(mu.year.indiv.sims[,i,j])
+      }
+    }
+  }
   n.obs <- length(gi)
   Observed <- gi
   Predicted <- numeric(n.obs)

@@ -148,7 +148,7 @@ identical to the precision reported.
 With site effect (and inverse gamma priors...)
 **********************************************
 Inference for Stan model: growth-increment-with-site.
-4 chains, each with iter=2500; warmup=1250; thin=1; 
+4 chains, each with iter=2500; warmup=1250; thin=1;
 post-warmup draws per chain=1250, total post-warmup draws=5000.
 
                mean se_mean    sd   2.5%    25%    50%   75% 97.5% n_eff  Rhat
@@ -198,5 +198,5 @@ var_site      0.136   0.001 0.054  0.067  0.099  0.126 0.159 0.271  5000 1.000
 
 Samples were drawn using NUTS(diag_e) at Mon Nov 30 09:12:47 2015.
 For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at 
+and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).

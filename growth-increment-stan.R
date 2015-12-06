@@ -63,9 +63,10 @@ stan.pars <- c("beta_0",
                "mu_year",
                "mu_indiv",
                "mu_site",
-               "var_resid",
-               "var_indiv",
-               "var_site",
+               "mu_year_indiv",
+               "sigma_resid",
+               "sigma_indiv",
+               "sigma_site",
                "idx_site",
                "log_lik")
 fit <- stan(file="growth-increment-with-site.stan",
@@ -81,12 +82,18 @@ fit <- stan(file="growth-increment-with-site.stan",
 opt.old <- options(width=120)
 sink("results-stan.txt", append=TRUE)
 cat("\n\n\n\n",
-    "With site effect (and inverse gamma priors...)\n",
-    "**********************************************\n",
+    "With site effect (using raw data instead of detrended)\n",
+    "******************************************************\n",
     sep="")
 print(fit,
-      pars=c("beta_ppt", "beta_tmn", "var_resid", "var_indiv", "var_site"),
+      pars=c("beta_ppt",
+             "beta_tmn",
+             "sigma_resid",
+             "sigma_indiv",
+             "sigma_site"),
       digits_summary=3)
 sink()
 options(opt.old)
 
+save(fit, n.months, gi, year, indiv, site, start.series, end.series,
+     file="results-stan.Rsave")
