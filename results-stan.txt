@@ -148,7 +148,6 @@ identical to the precision reported.
 With site effect (and inverse gamma priors...)
 **********************************************
 Inference for Stan model: growth-increment-with-site.
-<<<<<<< HEAD
 4 chains, each with iter=2500; warmup=1250; thin=1;
 post-warmup draws per chain=1250, total post-warmup draws=5000.
 
@@ -211,4 +210,3 @@ p_loo       186.3   1.6
 looic      8292.3 128.3
 
 All Pareto k estimates OK (k < 0.5)
-
