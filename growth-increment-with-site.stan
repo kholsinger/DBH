@@ -11,6 +11,8 @@ data {
   int<lower=0> year[n_obs];
   int<lower=0> indiv[n_obs];
   int<lower=0> site[n_indiv];
+  int<lower=0> year_cens[n_obs_cens];
+  int<lower=0> indiv_cens[n_obs_cens];
   // for index calculations
   vector[n_months] ppt_mean;
   vector[n_months] tmn_mean;
@@ -18,8 +20,6 @@ data {
   real lower_bound;
 }
 parameters {
-  // censored data treated as missing values
-  vector<upper=lower_bound>[n_obs_cens] gi_cens;
   vector[n_months] beta_ppt;
   vector[n_months] beta_tmn;
   vector[n_indiv] mu_indiv;
@@ -28,6 +28,9 @@ parameters {
   real<lower=0> sigma_resid;
   real<lower=0> sigma_indiv;
   real<lower=0> sigma_site;
+  // censored data treated as missing values
+  //
+  vector<upper=lower_bound>[n_obs_cens] gi_cens;
 }
 transformed parameters {
   matrix[n_years,n_indiv] mu_year_indiv;
@@ -69,10 +72,13 @@ model {
   for (i in 1:n_obs) {
     gi[i] ~ normal(mu_year_indiv[year[i],indiv[i]], sigma_resid);
   }
+  for (i in 1:n_obs_cens) {
+    gi_cens[i] ~ normal(mu_year_indiv[year_cens[i],indiv_cens[i]], sigma_resid);
+  }
 }
 generated quantities {
   vector[n_sites] idx_site;
-  vector[n_obs] log_lik;
+  vector[n_obs+n_obs_cens] log_lik;
 
   // beta_0 incorporated through prior mean on mu_site
   //
@@ -80,8 +86,13 @@ generated quantities {
   // calculate log likelihoods
   //
   for (i in 1:n_obs) {
-    log_lik[i] <- student_t_log(gi[i], nu,
-                                mu_year_indiv[year[i],indiv[i]],
-                                sigma_resid);
+    log_lik[i] <- normal_log(gi[i],
+                             mu_year_indiv[year[i],indiv[i]],
+                             sigma_resid);
+  }
+  for (i in 1:n_obs_cens) {
+    log_lik[i+n_obs] <- normal_log(gi_cens[i],
+                                   mu_year_indiv[year[i],indiv[i]],
+                                   sigma_resid);
   }
 }

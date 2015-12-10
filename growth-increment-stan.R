@@ -27,15 +27,43 @@ select.rows <- function(x, k) {
   return(y)
 }
 
+## calculate R^2 (Gelman et al. 2006)
+##
+calc.r2 <- function(mu.year.indiv.sims, y, y.cens) {
+  dims <- dim(mu.year.indiv.sims$mu_year_indiv)
+  v.theta <- numeric(dims[1])
+  v.eps <- numeric(dims[1])
+  for (iter in 1:dims[1]) {
+    mu.year.indiv <- matrix(nrow=dims[2], ncol=dims[3])
+    for (i in 1:dims[2]) {
+      for (j in 1:dims[3]) {
+        mu.year.indiv[i,j] <- mean(mu.year.indiv.sims$mu_year_indiv[,i,j])
+      }
+    }
+    mu <- numeric(n.obs+n.obs.cens)
+    eps <- numeric(n.obs+n.obs.cens)
+    for (i in 1:n.obs) {
+      mu[i] <- mu.year.indiv[year[i], indiv[i]]
+      eps[i] <- y[i] - mu[i]
+    }
+    for (i in 1:n.obs.cens) {
+      mu[i+n.obs] <- mu.year.indiv[year.cens[i], indiv.cens[i]]
+      eps[i+n.obs] <- y.cens[i] - mu[i+n.obs]
+    }
+    v.theta[iter] <- var(mu+eps)
+    v.eps[iter] <- var(eps)
+  }
+  r2 <- 1 - v.eps/v.theta
+  return(r2)
+}
+
 source("prepare-data.R")
 
 ## standardize response variable and covariates before JAGS analysis
 ##
-## gi <- standardize(gi)
-##
 ## re-extracct individual-level data, recognizing censoring
 ##
-gi.data$gi <- standardize(gi.data$gi)
+gi.data$gi <- standardize(sqrt(gi.data$gi))
 gi.data$id <- as.numeric(as.factor(gi.data$id))
 ## lower_bound is lower bound for data
 ##
@@ -46,14 +74,12 @@ gi.data.cens <- subset(gi.data, gi==lower_bound)
 gi.cens <- gi.data.cens$gi
 year.cens <- gi.data.cens$yr
 indiv.cens <- gi.data.cens$id
-site.cens <- gi.data.cens$site
 ## uncensored observations
 ##
 gi.data <- subset(gi.data, gi > lower_bound)
 gi <- gi.data$gi
 year <- gi.data$yr
 indiv <- gi.data$id
-site <- gi.data$site
 
 n.obs <- length(gi)
 n.obs.cens <- length(gi.cens)
@@ -81,10 +107,8 @@ stan.data <- list(gi=gi,
                   n_obs_cens=n.obs.cens,
                   n_years=n.years,
                   n_indiv=n.indiv,
-                  n_indiv_cens=n.inidv.cens,
                   n_sites=n.sites,
-                  n_months=n.months,
-                  nu=nu)
+                  n_months=n.months)
 stan.pars <- c("beta_0",
                "beta_ppt",
                "beta_tmn",
@@ -96,7 +120,8 @@ stan.pars <- c("beta_0",
                "sigma_indiv",
                "sigma_site",
                "idx_site",
-               "log_lik")
+               "log_lik",
+               "gi_cens")
 fit <- stan(file="growth-increment-with-site.stan",
             data=stan.data,
             pars=stan.pars,
@@ -120,8 +145,16 @@ print(fit,
              "sigma_indiv",
              "sigma_site"),
       digits_summary=3)
+##
+## R^2
+##
+r2 <- calc.r2(extract(fit, pars=c("mu_year_indiv"), gi, rep(0, n.obs.cens)))
+cat("\n\n",
+    "R^2: ", round(r2, 3), "\n", sep="")
 sink()
 options(opt.old)
 
-save(fit, n.months, gi, year, indiv, site, start.series, end.series,
+save(fit, n.months, gi, lower_bound,
+     year, indiv, year.cens, indiv.cens,
+     site, start.series, end.series,
      file="results-stan.Rsave")
