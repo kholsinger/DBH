@@ -1,5 +1,6 @@
 data {
   int<lower=0> n_obs;
+  int<lower=0> n_obs_cens;
   int<lower=0> n_years;
   int<lower=0> n_indiv;
   int<lower=0> n_sites;
@@ -13,10 +14,12 @@ data {
   // for index calculations
   vector[n_months] ppt_mean;
   vector[n_months] tmn_mean;
-  // for robust regression
-  real nu;
+  // for censoring
+  real lower_bound;
 }
 parameters {
+  // censored data treated as missing values
+  vector<upper=lower_bound>[n_obs_cens] gi_cens;
   vector[n_months] beta_ppt;
   vector[n_months] beta_tmn;
   vector[n_indiv] mu_indiv;
