@@ -202,6 +202,7 @@ and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 
 
