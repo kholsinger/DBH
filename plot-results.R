@@ -147,14 +147,28 @@ if (check.residuals) {
         mu.year.indiv[i,j] <- mean(mu.year.indiv.sims[,i,j])
       }
     }
+    gi.cens <- apply(extract(fit, pars=c("gi_cens"))$gi_cens, 2, mean)
   }
   n.obs <- length(gi)
+  ## uncensored observations
+  ##
   Observed <- gi
   Predicted <- numeric(n.obs)
   Residual <- numeric(n.obs)
   for (i in 1:n.obs) {
     Predicted[i] <- mu.year.indiv[year[i], indiv[i]]
   }
+  ## censored observations
+  ##
+  n.obs.cens <- length(gi.cens)
+  Observed <- c(Observed, rep(lower_bound, n.obs.cens))
+  Predicted <- c(Predicted, numeric(n.obs.cens))
+  Residual <- c(Residual, numeric(n.obs.cens))
+  for (i in 1:n.obs.cens) {
+    Predicted[i+n.obs] <- mu.year.indiv[year.cens[i], indiv.cens[i]]
+  }
+  ## Residual
+  ##
   Residual <- Observed - Predicted
 
   for.plot <- data.frame(Observed=Observed, Predicted=Predicted,
