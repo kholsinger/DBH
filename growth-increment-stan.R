@@ -177,7 +177,8 @@ opt.old <- options(width=120)
 sink("results-stan.txt", append=TRUE, split=TRUE)
 cat("\n\n\n\n",
     "With site effect (using raw data instead of detrended)\n",
-    "******************************************************\n",
+    "N.B. includes threshold model for growth increments of 0\n",
+    "********************************************************\n",
     sep="")
 print(fit,
       pars=c("beta_ppt",

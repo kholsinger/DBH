@@ -36,9 +36,6 @@ transformed parameters {
   matrix[n_years,n_indiv] mu_year_indiv;
   vector[n_years] mu_year;
 
-  // n_months is number of months of prior weather included in
-  // calculating expectation
-  //
   // beta_0 incorporated into intercept for mu_year_indiv through mu_indiv
   //
   mu_year <- ppt*beta_ppt + tmn*beta_tmn;
