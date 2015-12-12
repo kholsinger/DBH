@@ -29,15 +29,27 @@ select.rows <- function(x, k) {
 
 ## calculate R^2 (Gelman et al. 2006)
 ##
-calc.r2 <- function(mu.year.indiv.sims, y, y.cens) {
+calc.r2 <- function(mu.year.indiv.sims, y, y.cens, verbose=FALSE) {
   dims <- dim(mu.year.indiv.sims$mu_year_indiv)
   v.theta <- numeric(dims[1])
   v.eps <- numeric(dims[1])
+  ## R^2
+  ##
   for (iter in 1:dims[1]) {
+    if (verbose) {
+      if ((iter %% 100) == 0) {
+        cat(".")
+        flush(stdout())
+      }
+      if (iter == dims[1]) {
+        cat(iter, "\n")
+        flush(stdout())
+      }
+    }
     mu.year.indiv <- matrix(nrow=dims[2], ncol=dims[3])
     for (i in 1:dims[2]) {
       for (j in 1:dims[3]) {
-        mu.year.indiv[i,j] <- mean(mu.year.indiv.sims$mu_year_indiv[,i,j])
+        mu.year.indiv[i,j] <- mu.year.indiv.sims$mu_year_indiv[iter,i,j]
       }
     }
     mu <- numeric(n.obs+n.obs.cens)
@@ -53,8 +65,37 @@ calc.r2 <- function(mu.year.indiv.sims, y, y.cens) {
     v.theta[iter] <- var(mu+eps)
     v.eps[iter] <- var(eps)
   }
-  r2 <- 1 - v.eps/v.theta
-  return(r2)
+  r2 <- 1 - mean(v.eps)/mean(v.theta)
+  ## lambda
+  ##
+  e.v.eps <- mean(v.eps)
+  for (iter in 1:dims[1]) {
+    if (verbose) {
+      if ((iter %% 100) == 0) {
+        cat(".")
+        flush(stdout())
+      }
+      if (iter == dims[1]) {
+        cat(iter, "\n")
+        flush(stdout())
+      }
+    }
+    mu.year.indiv <- matrix(nrow=dims[2], ncol=dims[3])
+    for (i in 1:dims[2]) {
+      for (j in 1:dims[3]) {
+        mu.year.indiv[i,j] <- mean(mu.year.indiv.sims$mu_year_indiv[,i,j])
+      }
+    }
+    mu <- numeric(n.obs+n.obs.cens)
+    eps <- numeric(n.obs+n.obs.cens)
+    for (i in 1:n.obs) {
+      mu[i] <- mu.year.indiv[year[i], indiv[i]]
+      eps[i] <- y[i] - mu[i]
+    }
+  }
+  v.e.eps <- var(eps)
+  lambda <- 1 - v.e.eps/e.v.eps
+  return(list(r2=r2, lambda=lambda))
 }
 
 source("prepare-data.R")
@@ -133,7 +174,7 @@ fit <- stan(file="growth-increment-with-site.stan",
             control=list(adapt_delta=0.95,
               max_treedepth=20))
 opt.old <- options(width=120)
-sink("results-stan.txt", append=TRUE)
+sink("results-stan.txt", append=TRUE, split=TRUE)
 cat("\n\n\n\n",
     "With site effect (using raw data instead of detrended)\n",
     "******************************************************\n",
@@ -148,9 +189,10 @@ print(fit,
 ##
 ## R^2
 ##
-r2 <- calc.r2(extract(fit, pars=c("mu_year_indiv"), gi, rep(0, n.obs.cens)))
+r2 <- calc.r2(extract(fit, pars=c("mu_year_indiv")), gi, rep(0, n.obs.cens))
 cat("\n\n",
-    "R^2: ", round(r2, 3), "\n", sep="")
+    "R^2:    ", round(r2$r2, 3), "\n",
+    "lambda: ", round(r2$lambda, 3), sep="")
 sink()
 options(opt.old)
 
