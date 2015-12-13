@@ -150,6 +150,7 @@ if (check.residuals) {
     gi.cens <- apply(extract(fit, pars=c("gi_cens"))$gi_cens, 2, mean)
   }
   n.obs <- length(gi)
+  residual.ts <- matrix(nrow=dims[2], ncol=dims[3])
   ## uncensored observations
   ##
   Observed <- gi
@@ -157,6 +158,7 @@ if (check.residuals) {
   Residual <- numeric(n.obs)
   for (i in 1:n.obs) {
     Predicted[i] <- mu.year.indiv[year[i], indiv[i]]
+    residual.ts[year[i],indiv[i]] <- Observed[i] - Predicted[i]
   }
   ## censored observations
   ##
@@ -166,6 +168,7 @@ if (check.residuals) {
   Residual <- c(Residual, numeric(n.obs.cens))
   for (i in 1:n.obs.cens) {
     Predicted[i+n.obs] <- mu.year.indiv[year.cens[i], indiv.cens[i]]
+    residual.ts[year.cens[i],indiv.cens[i]] <- Observed[i+n.obs] - Predicted[i+n.obs]
   }
   ## Residual
   ##
@@ -183,5 +186,28 @@ if (check.residuals) {
   p <- ggplot(for.plot, aes(x=Predicted, y=Residual)) +
        geom_hline(yintercept=0, linetype="dashed") +
        geom_point()
+  print(p)
+  ## Residual time series
+  ##
+  indivs <- seq(1, n.inds, by=1)
+  site.id <- numeric(0)
+  indiv <- numeric(0)
+  year <- numeric(0)
+  value <- numeric(0)
+  n.yrs <- dims[2]
+  yrs <- seq(start.series+1, end.series, by=1)
+  lag.max <- 15
+  lag <- numeric(0)
+  ind <- numeric(0)
+  auto.corr <- numeric(0)
+  for (i in 1:n.inds) {
+    acf.tmp <- acf(residual.ts[,i], na.action=na.pass, lag.max=lag.max)$acf[,,1]
+    lag <- c(lag, seq(1, length(acf.tmp), by=1))
+    ind <- c(ind, rep(i, length(acf.tmp), by=1))
+    auto.corr <- c(auto.corr, acf.tmp)
+  }
+  for.plot <- data.frame(Lag=lag, Individual=ind, ACF=auto.corr)
+  p <- ggplot(for.plot, aes(x=ACF)) + geom_histogram(binwidth=0.05) +
+       geom_vline(xintercept=0, lty=2) + facet_wrap(~ Lag)
   print(p)
 }
