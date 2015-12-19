@@ -201,8 +201,6 @@ For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 
 
 
@@ -266,3 +264,10 @@ convergence, Rhat=1).
 
 R^2:    0.496
 lambda: 0.542
+
+Computed from 5000 by 5074 log-likelihood matrix
+
+         Estimate     SE
+elpd_loo -12542.0  643.0
+p_loo      5058.7  343.8
+looic     25083.9 1285.9
