@@ -25,7 +25,7 @@ transformed parameters {
   matrix[n_sites,n_years] mu_year_site;
   vector[n_years] mu_year;
   real<lower=0> rho_sq;
-  matrix[n_years,n_years] Sigma;  // covariance matrix for Gaussian process
+  cov_matrix[n_years] Sigma;
 
   rho_sq <- inv(inv_rho_sq);
   // beta_0 incorporated into intercept for mu_year_indiv through mu_indiv
@@ -36,8 +36,8 @@ transformed parameters {
   //
   for (i in 1:n_sites) {
     for (j in 1:n_years) {
-      // mu_year_site[i,j] <- mu_site[i] + mu_year[j];
-      mu_year_site[i,j] <- beta_0 + mu_year[j];
+      mu_year_site[i,j] <- mu_site[i] + mu_year[j];
+      // mu_year_site[i,j] <- beta_0 + mu_year[j];
     }
   }
   // covariance matrix for Gaussian process
@@ -58,10 +58,14 @@ model {
   beta_0 ~ normal(0.0, 1.0);
   beta_ppt ~ normal(0.0, 1.0);
   beta_tmn ~ normal(0.0, 1.0);
-  sigma_site ~ cauchy(0.0, 2.5);
-  eta_sq ~ cauchy(0.0, 2.5);
-  inv_rho_sq ~ cauchy(0.0, 2.5);
-  sigma_sq ~ cauchy(0.0, 2.5);
+  // sigma_site ~ cauchy(0.0, 2.5);
+  // eta_sq ~ cauchy(0.0, 2.5);
+  // inv_rho_sq ~ cauchy(0.0, 2.5);
+  // sigma_sq ~ cauchy(0.0, 2.5);
+  sigma_site ~ normal(0.0, 1.0);
+  eta_sq ~ normal(0.0, 1.0);
+  inv_rho_sq ~ normal(0.0, 1.0);
+  sigma_sq ~ normal(0.0, 1.0);
 
   // likelihood
   //
