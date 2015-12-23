@@ -3,6 +3,7 @@ library(bootRes)
 library(pspline)
 
 use.detrended <- FALSE
+gaussian.process.model <- TRUE
 
 ## load detr() and helper functions
 source("detr.R")
@@ -17,7 +18,11 @@ end.series <- 2014
 final.month <- 8
 ## n.months: number of months included as covariates
 ##
-n.months <- 20
+if (gaussian.process.model) {
+  n.months <- 12
+} else {
+  n.months <- 20
+}
 ## set data path
 plot.data.path <- "plot-data"
 
