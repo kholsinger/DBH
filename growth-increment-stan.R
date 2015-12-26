@@ -31,11 +31,10 @@ select.rows <- function(x, k) {
 
 ## calculate R^2 (Gelman et al. 2006)
 ##
-calc.r2 <- function(mu.year.site.sims, y, n.indiv, site, verbose=FALSE) {
-  dims <- dim(mu.year.site.sims$mu_year_site)
-  n.iter <- dims[1]
-  n.site <- dims[2]
-  n.years <- dims[3]
+calc.r2 <- function(fit, y, n.years, n.indiv, verbose=FALSE) {
+  mu.year <- extract(fit, pars=c("mu_year"))$mu_year
+  mu.indiv <- extract(fit, pars=c("mu_indiv"))$mu_indiv
+  n.iter <- dim(mu.indiv)[1]
   v.theta <- numeric(n.iter)
   v.eps <- numeric(n.iter)
   ## R^2
@@ -51,17 +50,19 @@ calc.r2 <- function(mu.year.site.sims, y, n.indiv, site, verbose=FALSE) {
         flush(stdout())
       }
     }
-    mu.year.site <- matrix(nrow=n.site, ncol=n.years)
-    mu <- numeric(n.site*n.years)
-    eps <- numeric(n.site*n.years)
-    for (i in 1:n.site) {
+    mu.year.indiv <- matrix(nrow=n.indiv, ncol=n.years)
+    mu <- numeric(n.indiv*n.years)
+    eps <- numeric(n.indiv*n.years)
+    for (i in 1:n.indiv) {
       for (j in 1:n.years) {
-        mu.year.site[i,j] <- mu.year.site.sims$mu_year_site[iter,i,j]
+        mu.year.indiv[i,j] <- mu.indiv[iter,i] + mu.year[iter,j]
       }
     }
     for (i in 1:n.indiv) {
-      mu[i] <- mu.year.site[site[i],j]
-      eps[i] <- y[i,j] - mu[i]
+      for (j in 1:n.years) {
+        mu[i] <- mu.year.indiv[i,j]
+        eps[i] <- y[i,j] - mu[i]
+      }
     }
     v.theta[iter] <- var(mu+eps)
     v.eps[iter] <- var(eps)
@@ -81,15 +82,16 @@ calc.r2 <- function(mu.year.site.sims, y, n.indiv, site, verbose=FALSE) {
         flush(stdout())
       }
     }
-    ## mu.year.site <- matrix(nrow=dims[2], ncol=dims[3])
-    for (i in 1:n.site) {
+    for (i in 1:n.indiv) {
       for (j in 1:n.years) {
-        mu.year.site[i,j] <- mean(mu.year.site.sims$mu_year_site[,i,j])
+        mu.year.indiv[i,j] <- mean(mu.indiv[,i] + mu.year[,j])
       }
     }
     for (i in 1:n.indiv) {
-      mu[i] <- mu.year.site[site[i],j]
-      eps[i] <- y[i,j] - mu[i]
+      for (j in 1:n.years) {
+        mu[i] <- mu.year.indiv[i,j]
+        eps[i] <- y[i,j] - mu[i]
+      }
     }
   }
   v.e.eps <- var(eps)
@@ -177,12 +179,10 @@ print(fit,
 ##
 ## R^2
 ##
-## FIX ME: Have to finish fixing R^2 calculation
-##
-## r2 <- calc.r2(extract(fit, pars=c("mu_year_indiv")), gi, n.indiv, site)
-## cat("\n\n",
-##     "R^2:    ", round(r2$r2, 3), "\n",
-##     "lambda: ", round(r2$lambda, 3), sep="")
+r2 <- calc.r2(fit, gi, n.years, n.indiv, site)
+cat("\n\n",
+    "R^2:    ", round(r2$r2, 3), "\n",
+    "lambda: ", round(r2$lambda, 3), sep="")
 sink()
 options(opt.old)
 
