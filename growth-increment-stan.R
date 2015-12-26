@@ -3,7 +3,7 @@ library(rstan)
 
 rm(list=ls())
 
-debug <- FALSE
+debug <- TRUE
 
 ## MCMC settings
 ##
@@ -179,7 +179,7 @@ print(fit,
 ##
 ## R^2
 ##
-r2 <- calc.r2(fit, gi, n.years, n.indiv, site)
+r2 <- calc.r2(fit, gi, n.years, n.indiv)
 cat("\n\n",
     "R^2:    ", round(r2$r2, 3), "\n",
     "lambda: ", round(r2$lambda, 3), sep="")

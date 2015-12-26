@@ -59,10 +59,6 @@ model {
   beta_0 ~ normal(0.0, 1.0);
   beta_ppt ~ normal(0.0, 1.0);
   beta_tmn ~ normal(0.0, 1.0);
-  // sigma_site ~ cauchy(0.0, 2.5);
-  // eta_sq ~ cauchy(0.0, 2.5);
-  // inv_rho_sq ~ cauchy(0.0, 2.5);
-  // sigma_sq ~ cauchy(0.0, 2.5);
   sigma_indiv ~ normal(0.0, 1.0);
   sigma_site ~ normal(0.0, 1.0);
   eta_sq ~ normal(0.0, 1.0);
