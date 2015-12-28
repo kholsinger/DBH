@@ -3,7 +3,7 @@ library(rstan)
 
 rm(list=ls())
 
-debug <- TRUE
+debug <- FALSE
 
 ## MCMC settings
 ##
@@ -150,20 +150,35 @@ stan.pars <- c("beta_0",
                "rho_sq",
                "sigma_sq",
                "log_lik")
-fit <- stan(file="growth-increment-with-site.stan",
-            data=stan.data,
-            pars=stan.pars,
-            iter=n.iter,
-            warmup=n.burnin,
-            thin=n.thin,
-            chains=n.chains,
-            cores=n.cores)
+if (use.detrended) {
+  fit <- stan(file="growth-increment-with-site.stan",
+              data=stan.data,
+              pars=stan.pars,
+              iter=n.iter,
+              warmup=n.burnin,
+              thin=n.thin,
+              chains=n.chains,
+              cores=n.cores,
+              control=list(max_treedepth=20))
+} else {
+  fit <- stan(file="growth-increment-with-site.stan",
+              data=stan.data,
+              pars=stan.pars,
+              iter=n.iter,
+              warmup=n.burnin,
+              thin=n.thin,
+              chains=n.chains,
+              cores=n.cores)
+}
 opt.old <- options(width=120)
-sink("results-stan.txt", append=TRUE, split=TRUE)
+if (!debug) {
+  sink("results-stan.txt", append=TRUE, split=TRUE)
+}
 cat("\n\n\n\n",
     "With individual effect (using raw data instead of detrended)\n",
     "N.B. without threshold model for growth increments of 0\n",
     "     with Gaussian process model for individuals\n",
+    "     using detrended data\n",
     "************************************************************\n",
     sep="")
 print(fit,
@@ -183,7 +198,9 @@ r2 <- calc.r2(fit, gi, n.years, n.indiv)
 cat("\n\n",
     "R^2:    ", round(r2$r2, 3), "\n",
     "lambda: ", round(r2$lambda, 3), sep="")
-sink()
+if (!debug) {
+  sink()
+}
 options(opt.old)
 
 if (!debug) {

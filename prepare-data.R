@@ -2,7 +2,7 @@ library(dplR)
 library(bootRes)
 library(pspline)
 
-use.detrended <- FALSE
+use.detrended <- TRUE
 use.20 <- TRUE
 
 ## load detr() and helper functions

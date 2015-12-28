@@ -39,7 +39,7 @@ transformed parameters {
   for (i in 1:n_indiv) {
     for (j in 1:n_years) {
       mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j];
-    }
+     }
   }
   // covariance matrix for Gaussian process
   //
