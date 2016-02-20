@@ -1,3 +1,5 @@
+library(plyr)
+
 standardize.vector <- function(x) {
   x.bar <- mean(x, na.rm=TRUE)
   s.d. <- sd(x, na.rm=TRUE)
@@ -32,9 +34,6 @@ dbh <- subset(dbh, Species!="UNK")
 ## correct typo in species name
 ##
 dbh$Species[dbh$Species=="PMSE"] <- "PSME"
-## exclude plot 154 for the time being
-##
-dbh <- subset(dbh, plot!="154")
 ## exclude POTR
 ##
 dbh <- subset(dbh, Species!="POTR")

@@ -2,8 +2,8 @@ library(dplR)
 library(bootRes)
 library(pspline)
 
-use.detrended <- TRUE
-use.20 <- TRUE
+use.detrended <- FALSE
+use.20 <- FALSE
 
 ## load detr() and helper functions
 source("detr.R")
@@ -124,7 +124,7 @@ gi.data$yr <- gi.data$yr - start.series
 ##
 gi.data <- subset(gi.data, !is.na(gi))
 ##
-## extract for JAGS
+## extract for Stan
 ##
 gi <- gi.data$gi
 year <- gi.data$yr
