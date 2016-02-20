@@ -1,10 +1,12 @@
 ************************************************************
+Mistakenly used old data rather than updates from Margaret
+
 Sat Feb 20 15:03:53 2016
 With Gaussian process model for individuals
      using raw data
 Inference for Stan model: gi-plus-dbh.
 4 chains, each with iter=2500; warmup=1250; thin=1;
-post-warmup draws per chain=1250, total post-warmup draws=5000.
+post-warmup draws per chain=1250, total post-warmup draws=500.
 
                     mean se_mean    sd   2.5%    25%    50%    75% 97.5% n_eff  Rhat
 beta_0_gi[1]       0.008   0.000 0.017  0.000  0.001  0.003  0.008 0.052  2314 1.002
