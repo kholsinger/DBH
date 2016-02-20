@@ -57,10 +57,10 @@ for(i in 1:length(files)) {
   data.tr[[i]] <- ts(a[,1:ncol(a)],
                      start = as.numeric(rownames(a)[1]),
                      frequency = 1)
-  data.tr.det[[i]] <- detr(data.tr[[i]],10)
-  data.tr.det[[i]] <- window(data.tr.det[[i]],
+  data.tr[[i]] <- window(data.tr[[i]],
                              start=start.series+1,  # why does this start with 1982?
                              end=end.series)
+  data.tr.det[[i]] <- detr(data.tr[[i]],10)                             
 }
 
 ## climate data
@@ -87,14 +87,15 @@ rm(prism, vpd, vpd81)
 
 ## translate data into format required for JAGS analysis
 ##
-data <- data.frame(t(data.tr.det[[1]]), site=files[1])
-for (i in 2:length(data.tr.det)) {
-  tmp.data <- data.frame(t(data.tr.det[[i]]), site=files[i])
+data <- data.frame(t(data.tr[[1]]))
+for (i in 2:length(data.tr)) {
+  tmp.data <- data.frame(t(data.tr[[i]]))
   data <- rbind(data, tmp.data)
 }
-colnames(data) <- c(seq(from=start.series+1, to=end.series+1, by=1), "site") #1982-2014, site
+colnames(data) <- c(seq(from=start.series+1, to=end.series+1, by=1)) #1982-2014, site
 data$"2014" <- 2014 # erase the data in the year 2014 because vpd data ends in 2013
-data$id <- rownames(data)
+data$site <- substr(rownames(data), 1, 3)
+data$id <- as.numeric(substr(rownames(data), 4, 7))
 years <- setdiff(colnames(data), c("site","id")) # chop off site and id columns, use the rest to make a year label vector
 # reshape the data to make each year*tree's growth increment a row
 gi.data <- reshape(data,
