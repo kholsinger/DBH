@@ -15,8 +15,6 @@ if (debug) {
   n.burnin <- 50
   n.iter <- 100
   n.chains <- 2
-  ## to allow replication of results across runs in JAGS
-  ##
 }
 
 rstan_options(auto_write = TRUE)
@@ -100,8 +98,14 @@ calc.r2 <- function(fit, y, n.years, n.indiv, verbose=FALSE) {
 }
 
 source("prepare-data.R")
+source("dbh-process-data.R")
 
-## standardize response variable and covariates before JAGS analysis
+## exclude plot 154 for the time being
+##
+dbh <- subset(dbh, plot!="154")
+data <- subset(data, site!="154.rwl")
+
+## standardize response variable and covariates before analysis
 ##
 ## extracct individual-level data
 ## exclude any individuals with NA for now
@@ -112,84 +116,121 @@ is.na.in.row <- function(x) {
 not.is.na.in.row <- function(x) {
   !is.na.in.row(x)
 }
+strip.rwl <- function(x) {
+  y <- sub(".rwl", "", x)
+  return(y)
+}
 data <- data[apply(data, 1, not.is.na.in.row),]
 ## observations
 ##
+
+## growth increment data
+##
 gi <- data[,1:n.years]
-site <- as.numeric(data$site)
-n.site <- length(unique(site))
+site_gi <- as.numeric(as.factor(strip.rwl(data$site)))
+n.sites <- length(unique(site))
 
 n.indiv <- nrow(gi)
 
 ppt <- standardize(ppt)
 tmn <- standardize(tmn)
 
-## calculate means for last decade for index calculation
+## dbh data
 ##
-ppt_mean <- apply(select.rows(ppt, 10), 2, mean)
-tmn_mean <- apply(select.rows(tmn, 10), 2, mean)
+dbh_1 <- standardize(dbh$T1_BasalArea)
+dbh_2 <- standardize(dbh$T2_BasalArea)
+dbh_inc <- standardize(dbh$T2_BasalArea - dbh$T1_BasalArea)
+tree_size <- standardize(dbh$Tree.height)
+height_ratio <- standardize(dbh$height.ratio)
+site_dbh <- as.numeric(dbh$plot)
+species <- as.numeric(dbh$Species)
+radiation <- standardize(plot.level$radiation)
+slope <- standardize(plot.level$slope)
+aspect <- standardize(plot.level$aspect)
+twi <- standardize(plot.level$twi)
+n_obs <- nrow(dbh)
+n_species <- length(unique(dbh$Species))
+stopifnot(n_species == max(species))
 
 stan.data <- list(gi=gi,
                   site=site,
                   ppt=ppt,
                   tmn=tmn,
-                  ppt_mean=ppt_mean,
-                  tmn_mean=tmn_mean,
                   n_years=n.years,
                   n_indiv=n.indiv,
                   n_sites=n.sites,
-                  n_months=n.months)
-stan.pars <- c("beta_0",
+                  n_months=n.months,
+                  dbh_1=dbh_1,
+                  dbh_2=dbh_2,
+                  tree_size-tree_size,
+                  height_ratio=height_ratio,
+                  slope=slope,
+                  aspect=aspect,
+                  twi=twi,
+                  site_dbh=site_dbh,
+                  species=species,
+                  n_obs=n_obs,
+                  n_species=n_species)
+stan.pars <- c("beta_0_gi",
                "beta_ppt",
                "beta_tmn",
                "mu_year",
                "mu_indiv",
                "sigma_indiv",
-               "sigma_site",
+               "sigma_site_gi",
                "eta_sq",
                "rho_sq",
                "sigma_sq",
-               "log_lik")
-if (use.detrended) {
-  fit <- stan(file="growth-increment-with-site.stan",
-              data=stan.data,
-              pars=stan.pars,
-              iter=n.iter,
-              warmup=n.burnin,
-              thin=n.thin,
-              chains=n.chains,
-              cores=n.cores,
-              control=list(max_treedepth=20))
-} else {
-  fit <- stan(file="growth-increment-with-site.stan",
-              data=stan.data,
-              pars=stan.pars,
-              iter=n.iter,
-              warmup=n.burnin,
-              thin=n.thin,
-              chains=n.chains,
-              cores=n.cores)
-}
+               "beta_0_dbh",
+               "beta_size",
+               "beta_height_ratio",
+               "gamma_radiation",
+               "gamma_aspect",
+               "gamma_twi",
+               "sigma_resid",
+               "sigma_site_dbh",
+               "sigma_species",
+               "log_lik_gi",
+               "log_lik_dbh")
+fit <- stan(file="gi-plus-dbh.stan",
+            data=stan.data,
+            pars=stan.pars,
+            iter=n.iter,
+            warmup=n.burnin,
+            thin=n.thin,
+            chains=n.chains,
+            cores=n.cores)
 opt.old <- options(width=120)
 if (!debug) {
-  sink("results-stan.txt", append=TRUE, split=TRUE)
+  sink("results-gi-plus-dbh.txt", append=TRUE, split=TRUE)
 }
-cat("\n\n\n\n",
-    "With individual effect (using raw data instead of detrended)\n",
-    "N.B. without threshold model for growth increments of 0\n",
-    "     with Gaussian process model for individuals\n",
-    "     using detrended data\n",
-    "************************************************************\n",
+cat("************************************************************\n",
     sep="")
+cat(date(), "\n",
+    "With Gaussian process model for individuals\n", sep="")
+if (use.detrended) {
+  cat("     using detrended data\n", sep="")
+} else {
+  cat("     using raw data\n", sep="")
+}
 print(fit,
-      pars=c("beta_0",
+      pars=c("beta_0_gi",
              "beta_ppt",
              "beta_tmn",
              "sigma_indiv",
-             "sigma_site",
+             "sigma_site_gi",
              "eta_sq",
              "rho_sq",
-             "sigma_sq"),
+             "sigma_sq",
+             "beta_0_dbh",
+             "beta_size",
+             "beta_height_ratio",
+             "gamma_radiation",
+             "gamma_aspect",
+             "gamma_twi",
+             "sigma_resid",
+             "sigma_site_dbh",
+             "sigma_species"),
       digits_summary=3)
 ##
 ## R^2
@@ -205,5 +246,5 @@ options(opt.old)
 
 if (!debug) {
   save(fit, n.months, gi, year, indiv, site, start.series, end.series,
-       file="results-stan.Rsave")
+       file="results-gi-plus-dbh.Rsave")
 }

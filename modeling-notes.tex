@@ -1,0 +1,97 @@
+\documentclass[12pt]{article}
+\usepackage{bm}
+
+\newcommand{\gi}{{\tt gi}}
+\newcommand{\dbh}{{\tt dbh}}
+
+\begin{document}
+
+\section*{Where we're headed}
+
+We have two sets of data: (1) annual growth increment (\gi) data paired
+with monthly precipitation and temperature data and (2) diameter at
+breast height (\dbh) data (2 observations) paired with observations on stand
+characteristics and local environmental variables. Ultimately, the
+goal is to use couple the \gi\ data, which are available for fewer
+individuals, with the \dbh\ data, which are available for more
+individuals to produce refined. The model we ultimately want is
+something like this:
+
+\begin{eqnarray*}
+y^{(dbh_2)}_{ij} &\sim& \mbox{N}(\mu_{ij}, \sigma^2_{dbh}) \\
+{\bm y}^{(gi)}_{kl} &\sim& \mbox{N}({\bm\nu}_{kl}, \Sigma) \\
+\mu_{ij} &=& y^{(dbh_1)}_{ij} + \exp{({\bm\beta X}_i + \alpha\phi_{l_j} +
+             \epsilon_{S_i} + \epsilon_{j})} \\
+\phi_{l_j} &=& {\bm\gamma Z}_{l_j\cdot} \\
+\epsilon_{S_i} &\sim& \mbox{N}(0, \sigma^2_{species}) \\
+\epsilon_{j} &\sim& \mbox{N}(0, \sigma^2_{plot^{(dbh)}}) \\
+\nu_{kl} &=& \nu_k + \nu_l \\
+\nu_l &=& {\bm\gamma Z}_{lm} \\
+\nu_k &\sim& \mbox{N}(\nu^{(plot)}_{M_k}, \sigma^2_{indiv}) \\
+\nu^{(plot)}_{M_k} &\sim& \mbox{N}(\nu_0, \sigma^2_{plot^{(gi)}})
+\quad ,
+\end{eqnarray*}
+where $y_{ij}^{(dbh_2)}$ is the second measurement of diameter at
+breast height of individual $i$ in plot $j$, $y_{ij}^{(dbh_1)}$ is the
+first measurement of diameter breast height for individual $i$ in plot
+$j$, ${\bm X}_i$ is the vector of of site covariates for individual
+$i$ (including an intercept term), ${\bm Z}_{jm}$ is the vector of
+weather data at site $l$ in year $m$, $i=1,\dots,I$ indexes individual
+trees in the \dbh\ data, $j=1,\dots,J$ indexes sites, $k=1,\dots,K$
+indexes individual trees in the \gi\ data, $l=1,\dots,L$ indexes plots
+within sites, and $l_j$ refers to the site index in which plot $j$
+occurs. I haven't included all of the necessary priors, but this
+captures other features of the model.
+
+This approach ``ties'' the \dbh\ and \gi\ data together through
+$\bm\gamma$, the regression coefficients for monthly precipitation and
+temperature data. The easiest way to think of this is that there is a
+latent growth process that we observe yearly in the \gi\ data and only
+over an interval in the \dbh\ data. Since growth in the latent process
+is unobservable, we can only relate it to the observable data as a
+ratio, $\alpha$, of \dbh\ growth to \gi\ growth. Notice that
+$\alpha\phi_{l_j}$ is an adjustment to the intercept. As a result,
+$\alpha$ in non-identifiable, meaning that we can't couple the models
+this way, unless $L > 1$.
+
+\section*{What we have}
+
+In our case (so far) $L = 1$, so we can't fit that model. We can,
+however, fit a one that couples the \gi\ and \dbh\ data in a different
+way. Specifically, in the model above the prior for plot effect in the
+\gi\ data is
+\[
+\nu^{(plot)}_{M_k} \sim \mbox{N}(\nu_0, \sigma^2_{plot^{(gi)}})
+\quad .
+\]
+We also have an estimate of the plot effect from the \dbh\ data,
+namely $\epsilon_j$. So instead of using the same prior mean, $\nu_0$
+for all plot effects in the \gi\ data, we can use plot-specific prior
+means related to the plot effects from the \dbh\ data.
+\begin{eqnarray*}
+\nu^{(plot)}_{M_k} &\sim& \mbox{N}(\nu_{0,{M_k}},
+                          \sigma^2_{plot^{(gi)}}) \\
+\nu_{0,{M_k}} &\propto& exp(\epsilon_{M_k}) \quad , 
+\end{eqnarray*}
+where the constant of proportionality is equal to the number of years
+between the first and second measurement of diameter at breast
+height. An alternative approach would be
+\begin{eqnarray*}
+\nu^{(plot)}_{M_k} &=& \alpha^*\epsilon_{M_k} \\
+\alpha^* &\sim& \mbox{N}^+(0,\sigma^2_{plot^{(gi)}}) \quad .
+\end{eqnarray*}
+In the first approach, we might put a prior on
+$\sigma^2_{plot^{(gi)}}$ and estimate it. In the second approach, we'd
+probably pick a constant. $\sqrt 2$ would be a reasonable choice for a
+constant, since it would produce roughly a 95\% chance of
+$\alpha \in [0,1]$. 
+
+With either approach we can compare predicted values in \dbh\ and \gi\
+with observed and determine whether the differences are smaller than
+when the models are run independently. We can also look at the
+credible intervals associated with both the regression coefficients
+and the posterior predictions. It could be that the coupled model
+leads to more precise predictions even if the mean posterior
+prediction differs little between models. 
+
+\end{document}
