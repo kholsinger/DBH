@@ -2,6 +2,12 @@
 ##
 .Rhistory
 
+## LaTeX files to ignore
+##
+*.aux
+*.log
+*.synctex.gz
+
 ## RStudio files to ignore
 ##
 .Rproj*
