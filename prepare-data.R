@@ -3,6 +3,7 @@ library(bootRes)
 library(pspline)
 
 use.detrended <- FALSE
+use.20 <- FALSE
 
 ## load detr() and helper functions
 source("detr.R")
@@ -17,7 +18,11 @@ end.series <- 2014
 final.month <- 8
 ## n.months: number of months included as covariates
 ##
-n.months <- 20
+if (use.20) {
+  n.months <- 20
+} else {
+  n.months <- 12
+}
 ## set data path
 plot.data.path <- "plot-data"
 
@@ -119,7 +124,7 @@ gi.data$yr <- gi.data$yr - start.series
 ##
 gi.data <- subset(gi.data, !is.na(gi))
 ##
-## extract for JAGS
+## extract for Stan
 ##
 gi <- gi.data$gi
 year <- gi.data$yr
