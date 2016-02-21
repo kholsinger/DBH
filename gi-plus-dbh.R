@@ -103,6 +103,7 @@ source("dbh-process-data.R")
 ## exclude plot 154 for the time being
 ##
 dbh <- subset(dbh, plot!="154")
+plot.level <- subset(plot.level, plot!="154")
 data <- subset(data, site!="154.rwl")
 
 ## standardize response variable and covariates before analysis

@@ -174,6 +174,6 @@ generated quantities {
                                       Sigma);
   }
   for (i in 1:n_obs) {
-    log_lik_dbh[i] <- normal_log(mu_indiv_dbh[i], sigma_resid)
+    log_lik_dbh[i] <- normal_log(dbh_2[i], mu_indiv_dbh[i], sigma_resid);
   }
 }
