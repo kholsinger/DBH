@@ -105,6 +105,11 @@ source("dbh-process-data.R")
 dbh <- subset(dbh, plot!="154")
 plot.level <- subset(plot.level, plot!="154")
 data <- subset(data, site!="154.rwl")
+## make sure levels of each factor reflect the dropped plot
+##
+dbh <- droplevels(dbh)
+plot.level <- droplevels(plot.level)
+data <- droplevels(data)
 
 ## standardize response variable and covariates before analysis
 ##
@@ -122,6 +127,8 @@ strip.rwl <- function(x) {
   return(y)
 }
 data <- data[apply(data, 1, not.is.na.in.row),]
+
+##
 ## observations
 ##
 
@@ -178,7 +185,8 @@ stan.pars <- c("beta_0_gi",
                "mu_year",
                "mu_indiv",
                "sigma_indiv",
-               "sigma_site_gi",
+               ##               "sigma_site_gi",
+               "alpha",
                "eta_sq",
                "rho_sq",
                "sigma_sq",

@@ -34,9 +34,9 @@ parameters {
   vector[n_months] beta_ppt;
   vector[n_months] beta_tmn;
   vector[n_indiv] mu_indiv;
-  vector[n_sites] mu_site;
+  // vector[n_sites] mu_site;
   real<lower=0> sigma_indiv;
-  real<lower=0> sigma_site_gi;
+  // real<lower=0> sigma_site_gi;
   real<lower=0> eta_sq;
   real<lower=0> inv_rho_sq;
   real<lower=0> sigma_sq;
@@ -55,6 +55,10 @@ parameters {
   real<lower=0> sigma_species;
   vector[n_sites] eps_site;
   vector[n_species] eps_species;
+
+  // for the connection
+  //
+  real<lower=0> alpha;
 }
 transformed parameters {
   // for growth increment component of the model
@@ -65,6 +69,7 @@ transformed parameters {
   cov_matrix[n_years] Sigma;
   // for dbh component of the model
   //
+  vector[n_sites] mu_site;
   vector[n_obs] mu_indiv_dbh;
   vector[n_obs] log_mu_dbh_inc;
   // prior mean for intercept for growth increment
@@ -115,9 +120,16 @@ transformed parameters {
   // prior mean of intercept for growth increment model derived
   // from site effect of dbh model
   //
+  // used as prior mean for normal distribution of growth increment site effects
   // divided by n_years to scale as annual increment
   //
-  beta_0_gi <- exp(eps_site)/n_years;
+  // beta_0_gi <- exp(eps_site)/n_years;
+  //
+  // multiplied by constant with half-normal prior for growth increment site effect
+  //
+  for (i in 1:n_sites) {
+    mu_site[i] <- alpha*exp(eps_site[i]);
+  }
 }
 model {
   // priors for growth increment component
@@ -125,7 +137,7 @@ model {
   beta_ppt ~ normal(0.0, 1.0);
   beta_tmn ~ normal(0.0, 1.0);
   sigma_indiv ~ normal(0.0, 1.0);
-  sigma_site_gi ~ normal(0.0, 1.0);
+  // sigma_site_gi ~ normal(0.0, 1.0);
   eta_sq ~ normal(0.0, 1.0);
   inv_rho_sq ~ normal(0.0, 1.0);
   sigma_sq ~ normal(0.0, 1.0);
@@ -141,15 +153,20 @@ model {
   sigma_resid ~ normal(0.0, 1.0);
   sigma_site_dbh ~ normal(0.0, 1.0);
   sigma_species ~ normal(0.0, 1.0);
+  // prior for proportionality constant between dbh and gi site
+  // random effects
+  // N.B.: alpha is defined with a lower bound of 0, so this is
+  // effectively a half-normal prior
+  alpha ~ normal(0.0, sqrt(2.0));
 
   // likelihood for growth increment component
   //
   for (i in 1:n_indiv) {
     mu_indiv[i] ~ normal(mu_site[site_gi[i]], sigma_indiv);
   }
-  for (i in 1:n_sites) {
-    mu_site[i] ~ normal(beta_0_gi[i], sigma_site_gi);
-  }
+  // for (i in 1:n_sites) {
+  //   mu_site[i] ~ normal(beta_0_gi[i], sigma_site_gi);
+  // }
   // individual site x year combinations
   //
   for (i in 1:n_indiv) {
