@@ -101,9 +101,7 @@ calc.r2 <- function(fit, y, n.years, n.indiv, verbose=FALSE) {
 
 source("prepare-data.R")
 
-## standardize response variable and covariates before JAGS analysis
-##
-## extracct individual-level data
+## extract individual-level data
 ## exclude any individuals with NA for now
 ##
 is.na.in.row <- function(x) {

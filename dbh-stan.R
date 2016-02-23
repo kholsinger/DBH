@@ -19,8 +19,6 @@ source("dbh-process-data.R")
 
 ## set up data vectors for Stan analysis
 ##
-dbh_1 <- standardize(dbh$T1_BasalArea)
-dbh_2 <- standardize(dbh$T2_BasalArea)
 dbh_inc <- standardize(dbh$T2_BasalArea - dbh$T1_BasalArea)
 tree_size <- standardize(dbh$Tree.height)
 height_ratio <- standardize(dbh$height.ratio)
@@ -39,8 +37,7 @@ stopifnot(n_species == max(species))
 stan.data <- list(n_obs=n_obs,
                   n_plots=n_plots,
                   n_species=n_species,
-                  dbh_1=dbh_1,
-                  dbh_2=dbh_2,
+                  dbh_inc=dbh_inc,
                   tree_size=tree_size,
                   height_ratio=height_ratio,
                   radiation=radiation,

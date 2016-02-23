@@ -8,8 +8,8 @@ data {
   matrix[n_indiv,n_years] gi;
   int<lower=0> site[n_indiv];
   // for index calculations
-  vector[n_months] ppt_mean;
-  vector[n_months] tmn_mean;
+  // vector[n_months] ppt_mean;
+  // vector[n_months] tmn_mean;
 }
 parameters {
   vector[n_months] beta_ppt;

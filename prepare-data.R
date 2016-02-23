@@ -3,7 +3,7 @@ library(bootRes)
 library(pspline)
 
 use.detrended <- FALSE
-use.20 <- FALSE
+n.months <- 12
 
 ## load detr() and helper functions
 source("detr.R")
@@ -18,11 +18,6 @@ end.series <- 2014
 final.month <- 8
 ## n.months: number of months included as covariates
 ##
-if (use.20) {
-  n.months <- 20
-} else {
-  n.months <- 12
-}
 ## set data path
 plot.data.path <- "plot-data"
 

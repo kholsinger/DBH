@@ -1,10 +1,7 @@
 data {
-  // shared
-  //
-  int<lower=0> n_sites;
-
   // for growth increment component
   //
+  int<lower=0> n_sites_gi;
   int<lower=0> n_years;
   int<lower=0> n_indiv;
   int<lower=0> n_months;
@@ -12,13 +9,17 @@ data {
   matrix[n_years,n_months] tmn;
   matrix[n_indiv,n_years] gi;
   int<lower=0> site_gi[n_indiv];
+  vector[n_indiv] radiation_gi;
+  vector[n_indiv] slope_gi;
+  vector[n_indiv] aspect_gi;
+  vector[n_indiv] twi_gi;
 
   // for dbh component
   //
+  int<lower=0> n_sites_dbh;
   int<lower=0> n_obs;
   int<lower=0> n_species;
-  vector[n_obs] dbh_2;
-  vector[n_obs] dbh_1;
+  vector[n_obs] dbh_inc;
   vector[n_obs] tree_size;
   vector[n_obs] height_ratio;
   vector[n_obs] radiation;
@@ -31,12 +32,13 @@ data {
 parameters {
   // for growth increment component
   //
+  real beta_0_gi;
   vector[n_months] beta_ppt;
   vector[n_months] beta_tmn;
   vector[n_indiv] mu_indiv;
-  // vector[n_sites] mu_site;
+  vector[n_sites_gi] mu_site;
   real<lower=0> sigma_indiv;
-  // real<lower=0> sigma_site_gi;
+  real<lower=0> sigma_site_gi;
   real<lower=0> eta_sq;
   real<lower=0> inv_rho_sq;
   real<lower=0> sigma_sq;
@@ -46,19 +48,19 @@ parameters {
   real beta_0_dbh;
   real beta_size;
   real beta_height_ratio;
-  real gamma_radiation;
-  real gamma_slope;
-  real gamma_aspect;
-  real gamma_twi;
   real<lower=0> sigma_resid;
   real<lower=0> sigma_site_dbh;
   real<lower=0> sigma_species;
-  vector[n_sites] eps_site;
+  vector[n_sites_dbh] eps_site;
   vector[n_species] eps_species;
 
   // for the connection
   //
   real<lower=0> alpha;
+  real gamma_radiation;
+  real gamma_slope;
+  real gamma_aspect;
+  real gamma_twi;
 }
 transformed parameters {
   // for growth increment component of the model
@@ -69,13 +71,15 @@ transformed parameters {
   cov_matrix[n_years] Sigma;
   // for dbh component of the model
   //
-  vector[n_sites] mu_site;
   vector[n_obs] mu_indiv_dbh;
-  vector[n_obs] log_mu_dbh_inc;
-  // prior mean for intercept for growth increment
-  // derived from dbh component
+  vector[n_obs] mu_dbh_inc;
+  vector[n_obs] alpha_indiv;
+  // for shared component of the model, scaled by alpha from dbh component
   //
-  vector[n_sites] beta_0_gi;
+  real gamma_radiation_gi;
+  real gamma_slope_gi;
+  real gamma_aspect_gi;
+  real gamma_twi_gi;
 
   // for growth increment component of the model
   //
@@ -106,38 +110,42 @@ transformed parameters {
   // for dbh component of the model
   //
   for (i in 1:n_obs) {
-    log_mu_dbh_inc[i] <- beta_size*tree_size[i]
-                         + beta_height_ratio*height_ratio[i]
-                         + gamma_radiation*radiation[site_dbh[i]]
-                         + gamma_slope*slope[site_dbh[i]]
-                         + gamma_aspect*aspect[site_dbh[i]]
-                         + gamma_twi*twi[site_dbh[i]]
-                         + eps_species[species[i]]
-                         + eps_site[site_dbh[i]];
+    mu_dbh_inc[i] <- beta_size*tree_size[i]
+                     + beta_height_ratio*height_ratio[i]
+                     // + gamma_radiation*radiation[site_dbh[i]]
+                     // + gamma_slope*slope[site_dbh[i]]
+                     // + gamma_aspect*aspect[site_dbh[i]]
+                     // + gamma_twi*twi[site_dbh[i]]
+                     + gamma_radiation*radiation[i]
+                     + gamma_slope*slope[i]
+                     + gamma_aspect*aspect[i]
+                     + gamma_twi*twi[i]
+                     + eps_species[species[i]]
+                     + eps_site[site_dbh[i]];
   }
-  mu_indiv_dbh <- dbh_1 + exp(log_mu_dbh_inc);
 
-  // prior mean of intercept for growth increment model derived
-  // from site effect of dbh model
+  // shared component at individual level, alpha scales
+  // regression coefficients from dbh component to gi component
   //
-  // used as prior mean for normal distribution of growth increment site effects
-  // divided by n_years to scale as annual increment
-  //
-  // beta_0_gi <- exp(eps_site)/n_years;
-  //
-  // multiplied by constant with half-normal prior for growth increment site effect
-  //
-  for (i in 1:n_sites) {
-    mu_site[i] <- alpha*exp(eps_site[i]);
+  gamma_radiation_gi <- alpha*gamma_radiation;
+  gamma_slope_gi <- alpha*gamma_slope;
+  gamma_aspect_gi <- alpha*gamma_aspect;
+  gamma_twi_gi <- alpha*gamma_twi;
+  for (i in 1:n_indiv) {
+    alpha_indiv[i] <- gamma_radiation_gi*radiation_gi[i]
+                      + gamma_slope_gi*slope_gi[i]
+                      + gamma_aspect_gi*aspect_gi[i]
+                      + gamma_twi_gi*twi_gi[i];
   }
 }
 model {
   // priors for growth increment component
   //
+  beta_0_gi ~ normal(0.0, 1.0);
   beta_ppt ~ normal(0.0, 1.0);
   beta_tmn ~ normal(0.0, 1.0);
   sigma_indiv ~ normal(0.0, 1.0);
-  // sigma_site_gi ~ normal(0.0, 1.0);
+  sigma_site_gi ~ normal(0.0, 1.0);
   eta_sq ~ normal(0.0, 1.0);
   inv_rho_sq ~ normal(0.0, 1.0);
   sigma_sq ~ normal(0.0, 1.0);
@@ -146,27 +154,28 @@ model {
   beta_0_dbh ~ normal(0.0, 1.0);
   beta_size ~ normal(0.0, 1.0);
   beta_height_ratio ~ normal(0.0, 1.0);
+  sigma_resid ~ normal(0.0, 1.0);
+  sigma_site_dbh ~ normal(0.0, 1.0);
+  sigma_species ~ normal(0.0, 1.0);
+  // prior for shared components
+  //
+  // N.B.: alpha is defined with a lower bound of 0, so it is
+  // effectively a half-normal prior
+  //
+  alpha ~ normal(0.0, sqrt(2.0));
   gamma_radiation ~ normal(0.0, 1.0);
   gamma_slope ~ normal(0.0, 1.0);
   gamma_aspect ~ normal(0.0, 1.0);
   gamma_twi ~ normal(0.0, 1.0);
-  sigma_resid ~ normal(0.0, 1.0);
-  sigma_site_dbh ~ normal(0.0, 1.0);
-  sigma_species ~ normal(0.0, 1.0);
-  // prior for proportionality constant between dbh and gi site
-  // random effects
-  // N.B.: alpha is defined with a lower bound of 0, so this is
-  // effectively a half-normal prior
-  alpha ~ normal(0.0, sqrt(2.0));
 
   // likelihood for growth increment component
   //
   for (i in 1:n_indiv) {
-    mu_indiv[i] ~ normal(mu_site[site_gi[i]], sigma_indiv);
+    mu_indiv[i] ~ normal(mu_site[site_gi[i]] + alpha_indiv[i], sigma_indiv);
   }
-  // for (i in 1:n_sites) {
-  //   mu_site[i] ~ normal(beta_0_gi[i], sigma_site_gi);
-  // }
+  for (i in 1:n_sites_gi) {
+    mu_site[i] ~ normal(beta_0_gi, sigma_site_gi);
+  }
   // individual site x year combinations
   //
   for (i in 1:n_indiv) {
@@ -177,7 +186,7 @@ model {
   //
   eps_species ~ normal(0.0, sigma_species);
   eps_site ~ normal(beta_0_dbh, sigma_site_dbh);
-  dbh_2 ~ normal(mu_indiv_dbh, sigma_resid);
+  dbh_inc ~ normal(mu_dbh_inc, sigma_resid);
 }
 generated quantities {
   vector[n_indiv] log_lik_gi;
@@ -191,6 +200,6 @@ generated quantities {
                                       Sigma);
   }
   for (i in 1:n_obs) {
-    log_lik_dbh[i] <- normal_log(dbh_2[i], mu_indiv_dbh[i], sigma_resid);
+    log_lik_dbh[i] <- normal_log(dbh_inc[i], mu_dbh_inc[i], sigma_resid);
   }
 }
