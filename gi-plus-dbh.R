@@ -1,10 +1,23 @@
+## a thought to consider...
+##   instead of completely uncoupled (gammas with independent priors in gi and dbh)
+##   or completely coupled (gammas in gi a constant times those in dbh)
+##   how about putting on a multivariate normal prior in which the correlation
+##   between the gammas is estimated?
+
 library(reshape)
 library(rstan)
 
 rm(list=ls())
 
 debug <- FALSE
-compare <- TRUE
+compare <- FALSE
+uncoupled <- FALSE
+
+if (uncoupled) {
+  model.file <- "gi-plus-dbh-uncoupled.stan"
+} else {
+  model.file <- "gi-plus-dbh.stan"
+}
 
 ## MCMC settings
 ##
@@ -212,7 +225,6 @@ stan.pars <- c("beta_0_gi",
                "mu_indiv",
                "sigma_indiv",
                "sigma_site_gi",
-               "alpha",
                "eta_sq",
                "rho_sq",
                "sigma_sq",
@@ -232,7 +244,10 @@ stan.pars <- c("beta_0_gi",
                "sigma_species",
                "log_lik_gi",
                "log_lik_dbh")
-fit <- stan(file="gi-plus-dbh.stan",
+if (!uncoupled) {
+  stan.pars <- c(stan.pars, "alpha")
+}
+fit <- stan(file=model.file,
             data=stan.data,
             pars=stan.pars,
             iter=n.iter,
@@ -249,6 +264,11 @@ cat("************************************************************\n",
 cat(date(), "\n",
     "With Gaussian process model for individuals\n",
     sep="")
+if (uncoupled) {
+    cat("   gi and dbh regression uncoupled\n", sep="")
+} else {
+    cat("   gi regression proportional to dbh regression\n", sep="")
+}
 if (use.detrended) {
   cat("     using detrended data\n", sep="")
 } else {
@@ -259,31 +279,59 @@ cat(before - after,
     "because of missing covariate data (plot, radiation, slope,\n",
     "aspect, twi)\n",
     sep="")
+print.pars <- c("beta_0_gi",
+                "beta_ppt",
+                "beta_tmn",
+                "sigma_indiv",
+                "sigma_site_gi",
+                "eta_sq",
+                "rho_sq",
+                "sigma_sq",
+                "beta_0_dbh",
+                "beta_size",
+                "beta_height_ratio",
+                "gamma_radiation",
+                "gamma_slope",
+                "gamma_aspect",
+                "gamma_twi",
+                "gamma_radiation_gi",
+                "gamma_slope_gi",
+                "gamma_aspect_gi",
+                "gamma_twi_gi",
+                "sigma_resid",
+                "sigma_site_dbh",
+                "sigma_species")
+if (!uncoupled) {
+  print.pars <- c(stan.pars, "alpha")
+}
 print(fit,
-      pars=c("beta_0_gi",
-             "beta_ppt",
-             "beta_tmn",
-             "sigma_indiv",
-             "sigma_site_gi",
-             "alpha",
-             "eta_sq",
-             "rho_sq",
-             "sigma_sq",
-             "beta_0_dbh",
-             "beta_size",
-             "beta_height_ratio",
-             "gamma_radiation",
-             "gamma_slope",
-             "gamma_aspect",
-             "gamma_twi",
-             "gamma_radiation_gi",
-             "gamma_slope_gi",
-             "gamma_aspect_gi",
-             "gamma_twi_gi",
-             "sigma_resid",
-             "sigma_site_dbh",
-             "sigma_species"),
+      pars=print.pars,
       digits_summary=3)
+##
+## R^2
+##
+## Not working for now
+##
+if (0) {
+  r2 <- calc.r2(fit, gi, n.years, n.indiv, n.iter)
+  cat("\n\n",
+      "R^2:    ", round(r2$r2, 3), "\n",
+      "lambda: ", round(r2$lambda, 3), sep="")
+}
+ if (!debug) {
+  sink()
+}
+options(opt.old)
+if (!debug) {
+  if (uncoupled) {
+    save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
+         file="results-gi-plus-dbh-uncoupled.Rsave")
+  } else {
+    save(fit, n.months, gi, year, indiv, site, start.series, end.series,
+         file="results-gi-plus-dbh.Rsave")
+  }
+}
+
 if (compare) {
   stan.data <- list(n_obs=n_obs,
                     n_plots=n.sites,
@@ -361,24 +409,6 @@ if (compare) {
                "rho_sq",
                "sigma_sq"),
         digits_summary=3)
+  options(opt.old)
 }
-##
-## R^2
-##
-## Not working for now
-##
-if (0) {
-  r2 <- calc.r2(fit, gi, n.years, n.indiv, n.iter)
-  cat("\n\n",
-      "R^2:    ", round(r2$r2, 3), "\n",
-      "lambda: ", round(r2$lambda, 3), sep="")
-}
- if (!debug) {
-  sink()
-}
-options(opt.old)
 
-if (!debug) {
-  save(fit, n.months, gi, year, indiv, site, start.series, end.series,
-       file="results-gi-plus-dbh.Rsave")
-}

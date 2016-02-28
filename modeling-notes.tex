@@ -18,10 +18,11 @@ individuals to produce refined. The model we ultimately want is
 something like this:
 
 \begin{eqnarray*}
-y^{(dbh_2)}_{ij} &\sim& \mbox{N}(\mu_{ij}, \sigma^2_{dbh}) \\
+y^{(dbh_{inc})}_{ij} &=& y^{(dbh_2)}_{ij} - y^{(dbh_1)}_{ij} \\
+y^{(dbh_{inc})}_{ij} &\sim& \mbox{N}(\mu_{ij}, \sigma^2_{dbh}) \\
 {\bm y}^{(gi)}_{kl} &\sim& \mbox{N}({\bm\nu}_{kl}, \Sigma) \\
-\mu_{ij} &=& y^{(dbh_1)}_{ij} + \exp{({\bm\beta X}_i + \alpha\phi_{l_j} +
-             \epsilon_{S_i} + \epsilon_{j})} \\
+\mu_{ij} &=& {\bm\beta X}_{l_i}^{(j)} + \alpha\phi_{l_j} +
+             \epsilon_{S_i} + \epsilon_{j} \\
 \phi_{l_j} &=& {\bm\gamma Z}_{l_j\cdot} \\
 \epsilon_{S_i} &\sim& \mbox{N}(0, \sigma^2_{species}) \\
 \epsilon_{j} &\sim& \mbox{N}(0, \sigma^2_{plot^{(dbh)}}) \\
@@ -32,16 +33,16 @@ y^{(dbh_2)}_{ij} &\sim& \mbox{N}(\mu_{ij}, \sigma^2_{dbh}) \\
 \quad ,
 \end{eqnarray*}
 where $y_{ij}^{(dbh_2)}$ is the second measurement of diameter at
-breast height of individual $i$ in plot $j$, $y_{ij}^{(dbh_1)}$ is the
-first measurement of diameter breast height for individual $i$ in plot
-$j$, ${\bm X}_i$ is the vector of of site covariates for individual
-$i$ (including an intercept term), ${\bm Z}_{jm}$ is the vector of
-weather data at site $l$ in year $m$, $i=1,\dots,I$ indexes individual
-trees in the \dbh\ data, $j=1,\dots,J$ indexes sites, $k=1,\dots,K$
-indexes individual trees in the \gi\ data, $l=1,\dots,L$ indexes plots
-within sites, and $l_j$ refers to the site index in which plot $j$
-occurs. I haven't included all of the necessary priors, but this
-captures other features of the model.
+breast height of individual $i$ in site $j$, $y_{ij}^{(dbh_1)}$ is the
+first measurement of diameter breast height for individual $i$ in site
+$j$, ${\bm X}_{l_i}^{(j)}$ is the vector of of covariates for individual $i$
+in plot $l$ within site $j$ (including an intercept term), ${\bm Z}_{lm}$ is the
+vector of weather data at site $l$ in year $m$, $i=1,\dots,I$ indexes
+individual trees in the \dbh\ data, $j=1,\dots,J$ indexes sites,
+$k=1,\dots,K$ indexes individual trees in the \gi\ data, $l=1,\dots,L$
+indexes plots within sites, and $l_j$ refers to the site index in
+which plot $j$ occurs. I haven't included all of the necessary priors,
+but this captures other features of the model.
 
 This approach ``ties'' the \dbh\ and \gi\ data together through
 $\bm\gamma$, the regression coefficients for monthly precipitation and
@@ -57,41 +58,36 @@ this way, unless $L > 1$.
 \section*{What we have}
 
 In our case (so far) $L = 1$, so we can't fit that model. We can,
-however, fit a one that couples the \gi\ and \dbh\ data in a different
-way. Specifically, in the model above the prior for plot effect in the
-\gi\ data is
-\[
-\nu^{(plot)}_{M_k} \sim \mbox{N}(\nu_0, \sigma^2_{plot^{(gi)}})
-\quad .
-\]
-We also have an estimate of the plot effect from the \dbh\ data,
-namely $\epsilon_j$. So instead of using the same prior mean, $\nu_0$
-for all plot effects in the \gi\ data, we can use plot-specific prior
-means related to the plot effects from the \dbh\ data.
+however, fit one that couples the \gi\ and \dbh\ data in a different
+way. Specifically, we make the following changes:
 \begin{eqnarray*}
-\nu^{(plot)}_{M_k} &\sim& \mbox{N}(\nu_{0,{M_k}},
-                          \sigma^2_{plot^{(gi)}}) \\
-\nu_{0,{M_k}} &\propto& \exp(\epsilon_{M_k}) \quad ,
+\mu_{ij} &=& {\bm\beta X}_{l_i} + \epsilon_{S_i} + \epsilon_{j} \\
+\nu_l &=& {\bm\gamma Z}_{lm} + \alpha{\bm\beta X}_l \quad .
 \end{eqnarray*}
-where the constant of proportionality is equal to the number of years
-between the first and second measurement of diameter at breast
-height. An alternative approach would be
+In other words, we couple the \gi\ and \dbh\ data through regression
+coefficients on the local plot variables within the single site we
+have. We won't be showing how parameters for monthly weather data from
+\gi\ enhance prediction of \dbh\, but we'll show something similar by
+showing how data shared between the two data sets can enhance
+prediction. We do that by comparing the fits to the two data sets in
+the model above with one with
 \begin{eqnarray*}
-\nu^{(plot)}_{M_k} &=& \alpha^*\exp(\epsilon_{M_k}) \\
-\alpha^* &\sim& \mbox{N}^+(0,\sigma^2_{plot^{(gi)}}) \quad .
+\mu_{ij} &=& {\bm\beta_{\mu} X}_{l_i} + \epsilon_{S_i} + \epsilon_{j} \\
+\nu_l &=& {\bm\gamma Z}_{lm} + {\bm\beta_{\nu} X}_l \quad .
 \end{eqnarray*}
-In the first approach, we might put a prior on
-$\sigma^2_{plot^{(gi)}}$ and estimate it. In the second approach, we'd
-probably pick a constant. $\sqrt 2$ would be a reasonable choice for a
-constant, since it would produce roughly a 95\% chance of
-$\alpha \in [0,1]$.
+and independent normal priors on the $\bm\beta_{\mu}$ and $\bm\beta_{\nu}$.
 
-With either approach we can compare predicted values in \dbh\ and \gi\
-with observed and determine whether the differences are smaller than
-when the models are run independently. We can also look at the
-credible intervals associated with both the regression coefficients
-and the posterior predictions. It could be that the coupled model
-leads to more precise predictions even if the mean posterior
-prediction differs little between models.
+The preliminary results (in {\tt model-comparison.txt}) show a mixed
+result. The predictive performance of the coupled model (the first one
+in this section) is strongly favored for \gi\, while the uncoupled
+model is strongly favored for \dbh.
+
+After getting these results, it occurred to me that there's a better
+approach, which I'm exploring now. Instead of independent normal
+priors on the $\bm\beta_{\mu}$ and $\bm\beta_{\nu}$, we use a
+bivariate normal prior on each component of them and estimate the
+correlation between the regression coefficients in the two
+models. That will give us the best compromise between complete
+independence (uncoupled) and perfect correlation (coupled).
 
 \end{document}

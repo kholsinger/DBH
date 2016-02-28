@@ -1,0 +1,42 @@
+Growth Increment component
+Coupled model
+Computed from 5000 by 70 log-likelihood matrix
+
+         Estimate    SE
+elpd_loo -16539.7  55.5
+p_loo     15946.0 132.2
+looic     33079.5 111.0
+
+All Pareto k estimates OK (k < 0.5)
+
+Uncoupled model
+Computed from 5000 by 70 log-likelihood matrix
+
+         Estimate    SE
+elpd_loo -33851.7 201.7
+p_loo     27169.1 201.5
+looic     67703.4 403.5
+model comparison (+ uncoupled favored, - coupled favored)
+ elpd_diff         se 
+-17311.980    192.599 
+
+
+DBH component
+Coupled model
+Computed from 5000 by 509 log-likelihood matrix
+
+         Estimate     SE
+elpd_loo  -9690.5  812.4
+p_loo      8946.5  786.0
+looic     19381.0 1624.7
+
+Uncoupled model
+Computed from 5000 by 509 log-likelihood matrix
+
+         Estimate    SE
+elpd_loo  -2455.0 137.9
+p_loo      1215.0 134.2
+looic      4910.1 275.8
+model comparison (+ uncoupled favored, - coupled favored)
+elpd_diff        se 
+ 7235.469   789.898 
