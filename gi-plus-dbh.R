@@ -1,9 +1,3 @@
-## a thought to consider...
-##   instead of completely uncoupled (gammas with independent priors in gi and dbh)
-##   or completely coupled (gammas in gi a constant times those in dbh)
-##   how about putting on a multivariate normal prior in which the correlation
-##   between the gammas is estimated?
-
 library(reshape)
 library(rstan)
 
@@ -11,12 +5,15 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- FALSE
+coupled <- FALSE
+correlated <- FALSE
 
-if (uncoupled) {
-  model.file <- "gi-plus-dbh-uncoupled.stan"
-} else {
+if (correlated) {
+  model.file <- "gi-plus-dbh-correlated.stan"
+} else if (coupled) {
   model.file <- "gi-plus-dbh.stan"
+} else {
+  model.file <- "gi-plus-dbh-uncoupled.stan"
 }
 
 ## MCMC settings
@@ -138,6 +135,13 @@ source("dbh-process-data.R")
 ##
 dbh <- subset(dbh, plot!="154")
 data <- subset(data, site!="154.rwl")
+## standardize now so that these covariates match between the gi data
+## and the dbh data
+##
+dbh$total <- standardize(dbh$total)
+dbh$Slope <- standardize(dbh$Slope)
+dbh$Aspect <- standardize(dbh$Aspect)
+dbh$TWI <- standardize(dbh$TWI)
 ## exclude any individuals with NA for row
 ##
 data <- data[apply(data, 1, not.is.na.in.row),]
@@ -186,10 +190,10 @@ tree_size <- standardize(dbh$Tree.height)
 height_ratio <- standardize(dbh$height.ratio)
 site_dbh <- as.numeric(as.factor(dbh$plot))
 species <- as.numeric(dbh$Species)
-radiation <- standardize(dbh$total)
-slope <- standardize(dbh$Slope)
-aspect <- standardize(dbh$Aspect)
-twi <- standardize(dbh$TWI)
+radiation <- dbh$total
+slope <- dbh$Slope
+aspect <- dbh$Aspect
+twi <- dbh$TWI
 n_sites_dbh <- length(unique(site_dbh))
 n_obs <- nrow(dbh)
 n_species <- length(unique(dbh$Species))
@@ -231,10 +235,10 @@ stan.pars <- c("beta_0_gi",
                "beta_0_dbh",
                "beta_size",
                "beta_height_ratio",
-               "gamma_radiation",
-               "gamma_slope",
-               "gamma_aspect",
-               "gamma_twi",
+               "gamma_radiation_dbh",
+               "gamma_slope_dbh",
+               "gamma_aspect_dbh",
+               "gamma_twi_dbh",
                "gamma_radiation_gi",
                "gamma_slope_gi",
                "gamma_aspect_gi",
@@ -244,7 +248,9 @@ stan.pars <- c("beta_0_gi",
                "sigma_species",
                "log_lik_gi",
                "log_lik_dbh")
-if (!uncoupled) {
+if (correlated) {
+  stan.pars <- c(stan.pars, "omega")
+} else if (coupled) {
   stan.pars <- c(stan.pars, "alpha")
 }
 fit <- stan(file=model.file,
@@ -264,10 +270,12 @@ cat("************************************************************\n",
 cat(date(), "\n",
     "With Gaussian process model for individuals\n",
     sep="")
-if (uncoupled) {
-    cat("   gi and dbh regression uncoupled\n", sep="")
+if (correlated) {
+  cat("   gi and dbh regression correlated\n", sep="")
+} else if (coupled) {
+  cat("   gi regression proportional to dbh regression\n", sep="")
 } else {
-    cat("   gi regression proportional to dbh regression\n", sep="")
+  cat("   gi and dbh regression uncoupled\n", sep="")
 }
 if (use.detrended) {
   cat("     using detrended data\n", sep="")
@@ -290,10 +298,10 @@ print.pars <- c("beta_0_gi",
                 "beta_0_dbh",
                 "beta_size",
                 "beta_height_ratio",
-                "gamma_radiation",
-                "gamma_slope",
-                "gamma_aspect",
-                "gamma_twi",
+                "gamma_radiation_dbh",
+                "gamma_slope_dbh",
+                "gamma_aspect_dbh",
+                "gamma_twi_dbh",
                 "gamma_radiation_gi",
                 "gamma_slope_gi",
                 "gamma_aspect_gi",
@@ -301,8 +309,10 @@ print.pars <- c("beta_0_gi",
                 "sigma_resid",
                 "sigma_site_dbh",
                 "sigma_species")
-if (!uncoupled) {
-  print.pars <- c(stan.pars, "alpha")
+if (correlated) {
+  print.pars <- c(print.pars, "omega")
+} else if (coupled) {
+  print.pars <- c(print.pars, "alpha")
 }
 print(fit,
       pars=print.pars,
@@ -323,7 +333,10 @@ if (0) {
 }
 options(opt.old)
 if (!debug) {
-  if (uncoupled) {
+  if (correlated) {
+    save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
+         file="results-gi-plus-dbh-correlated.Rsave")
+  } else if (uncoupled) {
     save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
          file="results-gi-plus-dbh-uncoupled.Rsave")
   } else {

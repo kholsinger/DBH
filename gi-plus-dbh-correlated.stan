@@ -42,10 +42,6 @@ parameters {
   real<lower=0> eta_sq;
   real<lower=0> inv_rho_sq;
   real<lower=0> sigma_sq;
-  real gamma_radiation_gi;
-  real gamma_slope_gi;
-  real gamma_aspect_gi;
-  real gamma_twi_gi;
 
   // for dbh component
   //
@@ -57,10 +53,14 @@ parameters {
   real<lower=0> sigma_species;
   vector[n_sites_dbh] eps_site;
   vector[n_species] eps_species;
-  real gamma_radiation_dbh;
-  real gamma_slope_dbh;
-  real gamma_aspect_dbh;
-  real gamma_twi_dbh;
+
+  // for the connection
+  //
+  corr_matrix[2] omega;
+  vector[2] gamma_radiation;
+  vector[2] gamma_slope;
+  vector[2] gamma_aspect;
+  vector[2] gamma_twi;
 }
 transformed parameters {
   // for growth increment component of the model
@@ -74,6 +74,23 @@ transformed parameters {
   vector[n_obs] mu_indiv_dbh;
   vector[n_obs] mu_dbh_inc;
   vector[n_obs] alpha_indiv;
+  // for shared component of the model
+  //
+  real gamma_radiation_dbh;
+  real gamma_slope_dbh;
+  real gamma_aspect_dbh;
+  real gamma_twi_dbh;
+  real gamma_radiation_gi;
+  real gamma_slope_gi;
+  real gamma_aspect_gi;
+  real gamma_twi_gi;
+  vector<lower=0>[2] tau;
+  vector[2] zero;
+
+  zero[1] <- 0.0;
+  zero[2] <- 0.0;
+  tau[1] <- 1.0;
+  tau[2] <- 1.0;
 
   // for growth increment component of the model
   //
@@ -103,6 +120,10 @@ transformed parameters {
 
   // for dbh component of the model
   //
+  gamma_radiation_dbh <- gamma_radiation[1];
+  gamma_slope_dbh <- gamma_slope[1];
+  gamma_aspect_dbh <- gamma_aspect[1];
+  gamma_twi_dbh <- gamma_twi[1];
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_size*tree_size[i]
                      + beta_height_ratio*height_ratio[i]
@@ -117,6 +138,10 @@ transformed parameters {
   // shared component at individual level, alpha scales
   // regression coefficients from dbh component to gi component
   //
+  gamma_radiation_gi <- gamma_radiation[2];
+  gamma_slope_gi <- gamma_slope[2];
+  gamma_aspect_gi <- gamma_aspect[2];
+  gamma_twi_gi <- gamma_twi[2];
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
@@ -135,10 +160,6 @@ model {
   eta_sq ~ normal(0.0, 1.0);
   inv_rho_sq ~ normal(0.0, 1.0);
   sigma_sq ~ normal(0.0, 1.0);
-  gamma_radiation_gi ~ normal(0.0, 1.0);
-  gamma_slope_gi ~ normal(0.0, 1.0);
-  gamma_aspect_gi ~ normal(0.0, 1.0);
-  gamma_twi_gi ~ normal(0.0, 1.0);
   // priors for dbh component
   //
   beta_0_dbh ~ normal(0.0, 1.0);
@@ -147,10 +168,13 @@ model {
   sigma_resid ~ normal(0.0, 1.0);
   sigma_site_dbh ~ normal(0.0, 1.0);
   sigma_species ~ normal(0.0, 1.0);
-  gamma_radiation_dbh ~ normal(0.0, 1.0);
-  gamma_slope_dbh ~ normal(0.0, 1.0);
-  gamma_aspect_dbh ~ normal(0.0, 1.0);
-  gamma_twi_dbh ~ normal(0.0, 1.0);
+  // prior for shared components
+  //
+  omega ~ lkj_corr(2.0);
+  gamma_radiation ~ multi_normal(zero, quad_form_diag(omega, tau));
+  gamma_slope ~ multi_normal(zero, quad_form_diag(omega, tau));
+  gamma_aspect ~ multi_normal(zero, quad_form_diag(omega, tau));
+  gamma_twi ~ multi_normal(zero, quad_form_diag(omega, tau));
 
   // likelihood for growth increment component
   //

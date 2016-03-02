@@ -57,10 +57,10 @@ parameters {
   // for the connection
   //
   real<lower=0> alpha;
-  real gamma_radiation;
-  real gamma_slope;
-  real gamma_aspect;
-  real gamma_twi;
+  real gamma_radiation_dbh;
+  real gamma_slope_dbh;
+  real gamma_aspect_dbh;
+  real gamma_twi_dbh;
 }
 transformed parameters {
   // for growth increment component of the model
@@ -112,14 +112,10 @@ transformed parameters {
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_size*tree_size[i]
                      + beta_height_ratio*height_ratio[i]
-                     // + gamma_radiation*radiation[site_dbh[i]]
-                     // + gamma_slope*slope[site_dbh[i]]
-                     // + gamma_aspect*aspect[site_dbh[i]]
-                     // + gamma_twi*twi[site_dbh[i]]
-                     + gamma_radiation*radiation[i]
-                     + gamma_slope*slope[i]
-                     + gamma_aspect*aspect[i]
-                     + gamma_twi*twi[i]
+                     + gamma_radiation_dbh*radiation[i]
+                     + gamma_slope_dbh*slope[i]
+                     + gamma_aspect_dbh*aspect[i]
+                     + gamma_twi_dbh*twi[i]
                      + eps_species[species[i]]
                      + eps_site[site_dbh[i]];
   }
@@ -127,10 +123,10 @@ transformed parameters {
   // shared component at individual level, alpha scales
   // regression coefficients from dbh component to gi component
   //
-  gamma_radiation_gi <- alpha*gamma_radiation;
-  gamma_slope_gi <- alpha*gamma_slope;
-  gamma_aspect_gi <- alpha*gamma_aspect;
-  gamma_twi_gi <- alpha*gamma_twi;
+  gamma_radiation_gi <- alpha*gamma_radiation_dbh;
+  gamma_slope_gi <- alpha*gamma_slope_dbh;
+  gamma_aspect_gi <- alpha*gamma_aspect_dbh;
+  gamma_twi_gi <- alpha*gamma_twi_dbh;
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
@@ -163,10 +159,10 @@ model {
   // effectively a half-normal prior
   //
   alpha ~ normal(0.0, sqrt(2.0));
-  gamma_radiation ~ normal(0.0, 1.0);
-  gamma_slope ~ normal(0.0, 1.0);
-  gamma_aspect ~ normal(0.0, 1.0);
-  gamma_twi ~ normal(0.0, 1.0);
+  gamma_radiation_dbh ~ normal(0.0, 1.0);
+  gamma_slope_dbh ~ normal(0.0, 1.0);
+  gamma_aspect_dbh ~ normal(0.0, 1.0);
+  gamma_twi_dbh ~ normal(0.0, 1.0);
 
   // likelihood for growth increment component
   //
