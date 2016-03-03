@@ -1,5 +1,6 @@
 library(rstan)
 library(loo)
+library(ggplot2)
 
 rm(list=ls())
 
@@ -22,6 +23,15 @@ loo_coupled <- loo(log_lik_gi_coupled)
 loo_uncoupled <- loo(log_lik_gi_uncoupled)
 print(compare(loo_correlated, loo_coupled, loo_uncoupled), digits=3)
 
+n <- dim(loo_correlated$pointwise)[1]
+gi <- data.frame(Model=c(rep("Uncoupled", n), rep("Coupled", n), rep("Correlated", n)),
+                 elpd=c(loo_uncoupled$pointwise[,1],
+                        loo_coupled$pointwise[,1],
+                        loo_correlated$pointwise[,1]),
+                 Individual=seq(from=1, to=n, by=1))
+p <- ggplot(gi, aes(x=Individual, y=elpd, color=Model)) + geom_point()
+print(p)
+
 cat("\n\n")
 cat("DBH component\n")
 loo_correlated <- loo(log_lik_dbh_correlated)
@@ -29,3 +39,13 @@ loo_coupled <- loo(log_lik_dbh_coupled)
 loo_uncoupled <- loo(log_lik_dbh_uncoupled)
 print(compare(loo_correlated, loo_coupled, loo_uncoupled), digits=3)
 sink()
+
+n <- dim(loo_correlated$pointwise)[1]
+gi <- data.frame(Model=c(rep("Uncoupled", n), rep("Coupled", n), rep("Correlated", n)),
+                 elpd=c(loo_uncoupled$pointwise[,1],
+                        loo_coupled$pointwise[,1],
+                        loo_correlated$pointwise[,1]),
+                 Individual=rep(seq(from=1, to=n, by=1), 3))
+p <- ggplot(gi, aes(x=Individual, y=elpd, color=Model)) + geom_point()
+print(p)
+

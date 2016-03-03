@@ -6,7 +6,7 @@ rm(list=ls())
 debug <- FALSE
 compare <- FALSE
 coupled <- FALSE
-correlated <- FALSE
+correlated <- TRUE
 
 if (correlated) {
   model.file <- "gi-plus-dbh-correlated.stan"
