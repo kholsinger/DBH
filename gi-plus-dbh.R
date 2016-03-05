@@ -4,9 +4,9 @@ library(rstan)
 rm(list=ls())
 
 debug <- FALSE
-compare <- FALSE
+compare <- TRUE
 coupled <- FALSE
-correlated <- TRUE
+correlated <- FALSE
 
 if (correlated) {
   model.file <- "gi-plus-dbh-correlated.stan"
@@ -265,7 +265,7 @@ opt.old <- options(width=120)
 if (!debug) {
   sink("results-gi-plus-dbh.txt", append=TRUE, split=TRUE)
 }
-cat("************************************************************\n",
+cat("\n\n************************************************************\n",
     sep="")
 cat(date(), "\n",
     "With Gaussian process model for individuals\n",
@@ -336,12 +336,12 @@ if (!debug) {
   if (correlated) {
     save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
          file="results-gi-plus-dbh-correlated.Rsave")
-  } else if (uncoupled) {
+  } else if (coupled) {
     save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
-         file="results-gi-plus-dbh-uncoupled.Rsave")
+         file="results-gi-plus-dbh.Rsave")
   } else {
     save(fit, n.months, gi, year, indiv, site, start.series, end.series,
-         file="results-gi-plus-dbh.Rsave")
+         file="results-gi-plus-dbh-uncoupled.Rsave")
   }
 }
 
