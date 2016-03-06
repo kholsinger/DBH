@@ -27,7 +27,6 @@ parameters {
   vector[n_species] eps_species;
 }
 transformed parameters {
-  vector[n_obs] mu_indiv;
   vector[n_obs] mu_dbh_inc;
 
   for (i in 1:n_obs) {

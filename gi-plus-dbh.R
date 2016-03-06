@@ -4,11 +4,17 @@ library(rstan)
 rm(list=ls())
 
 debug <- FALSE
-compare <- TRUE
+compare <- FALSE
 coupled <- FALSE
 correlated <- FALSE
+multi_correlated <- TRUE
+save <- TRUE
 
-if (correlated) {
+save <- save & !debug
+
+if (multi_correlated) {
+  model.file <- "gi-plus-dbh-multi-correlated.stan"
+} else if (correlated) {
   model.file <- "gi-plus-dbh-correlated.stan"
 } else if (coupled) {
   model.file <- "gi-plus-dbh.stan"
@@ -248,8 +254,13 @@ stan.pars <- c("beta_0_gi",
                "sigma_species",
                "log_lik_gi",
                "log_lik_dbh")
-if (correlated) {
+if (multi_correlated) {
   stan.pars <- c(stan.pars, "omega")
+} else if (correlated) {
+  stan.pars <- c(stan.pars, "omega_radiation",
+                 "omega_slope",
+                 "omega_aspect",
+                 "omega_twi")
 } else if (coupled) {
   stan.pars <- c(stan.pars, "alpha")
 }
@@ -270,7 +281,9 @@ cat("\n\n************************************************************\n",
 cat(date(), "\n",
     "With Gaussian process model for individuals\n",
     sep="")
-if (correlated) {
+if (multi_correlated) {
+  cat("   gi and dbh regression multivariate correlated\n", sep="")
+} else if (correlated) {
   cat("   gi and dbh regression correlated\n", sep="")
 } else if (coupled) {
   cat("   gi regression proportional to dbh regression\n", sep="")
@@ -309,8 +322,13 @@ print.pars <- c("beta_0_gi",
                 "sigma_resid",
                 "sigma_site_dbh",
                 "sigma_species")
-if (correlated) {
+if (multi_correlated) {
   print.pars <- c(print.pars, "omega")
+} else if (correlated) {
+  print.pars <- c(print.pars, "omega_radiation",
+                  "omega_slope",
+                  "omega_aspect",
+                  "omega_twi")
 } else if (coupled) {
   print.pars <- c(print.pars, "alpha")
 }
@@ -332,8 +350,11 @@ if (0) {
   sink()
 }
 options(opt.old)
-if (!debug) {
-  if (correlated) {
+if (save) {
+  if (multi_correlated) {
+    save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
+         file="results-gi-plus-dbh-multi-correlated.Rsave")
+  } else if (correlated) {
     save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
          file="results-gi-plus-dbh-correlated.Rsave")
   } else if (coupled) {
@@ -347,7 +368,7 @@ if (!debug) {
 
 if (compare) {
   stan.data <- list(n_obs=n_obs,
-                    n_plots=n.sites,
+                    n_plots=n_sites_dbh,
                     n_species=n_species,
                     dbh_inc=dbh_inc,
                     tree_size=tree_size,

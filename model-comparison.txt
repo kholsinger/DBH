@@ -1,12 +1,14 @@
 Growth Increment component
-               looic      se_looic   elpd_loo   se_elpd_loo p_loo      se_p_loo  
-loo_correlated   1382.995    351.256   -691.498    175.628     110.734     18.006
-loo_coupled     33079.474    110.950 -16539.737     55.475   15946.008    132.236
-loo_uncoupled   67703.433    403.488 -33851.716    201.744   27169.083    201.458
+                     looic    se_looic elpd_loo se_elpd_loo p_loo    se_p_loo
+loo_multi_correlated 1377.440  348.763 -688.720  174.381     110.205   17.894
+loo_uncoupled        1378.268  349.015 -689.134  174.507     107.743   15.861
+loo_correlated       1380.226  349.618 -690.113  174.809     109.768   16.869
+loo_coupled          1384.047  350.558 -692.024  175.279     111.209   16.958
 
 
 DBH component
-               looic     se_looic  elpd_loo  se_elpd_loo p_loo     se_p_loo 
-loo_correlated  1387.774    92.680  -693.887    46.340      24.106     7.541
-loo_uncoupled   4910.070   275.795 -2455.035   137.898    1214.990   134.244
-loo_coupled    19381.008  1624.714 -9690.504   812.357    8946.495   786.047
+                     looic    se_looic elpd_loo se_elpd_loo p_loo    se_p_loo
+loo_correlated       1386.248   92.295 -693.124   46.147      23.258    7.120
+loo_multi_correlated 1386.635   92.490 -693.317   46.245      23.796    7.522
+loo_coupled          1387.655   93.169 -693.828   46.584      24.316    8.082
+loo_uncoupled        1387.992   92.684 -693.996   46.342      24.167    7.196

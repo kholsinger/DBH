@@ -71,7 +71,6 @@ transformed parameters {
   cov_matrix[n_years] Sigma;
   // for dbh component of the model
   //
-  vector[n_obs] mu_indiv_dbh;
   vector[n_obs] mu_dbh_inc;
   vector[n_obs] alpha_indiv;
 
@@ -122,6 +121,9 @@ transformed parameters {
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
                       + gamma_twi_gi*twi_gi[i];
+    // for comparison with separate model in growth-increment-with-site.stan
+    //
+    // alpha_indiv[i] <- 0;
   }
 }
 model {

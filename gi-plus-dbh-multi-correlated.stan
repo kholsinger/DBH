@@ -56,14 +56,8 @@ parameters {
 
   // for the connection
   //
-  corr_matrix[2] omega_radiation;
-  corr_matrix[2] omega_slope;
-  corr_matrix[2] omega_aspect;
-  corr_matrix[2] omega_twi;
-  vector[2] gamma_radiation;
-  vector[2] gamma_slope;
-  vector[2] gamma_aspect;
-  vector[2] gamma_twi;
+  corr_matrix[8] omega;
+  vector[8] gamma;
 }
 transformed parameters {
   // for growth increment component of the model
@@ -87,31 +81,13 @@ transformed parameters {
   real gamma_slope_gi;
   real gamma_aspect_gi;
   real gamma_twi_gi;
-  vector<lower=0>[2] tau;
-  vector[2] zero;
-  // defined here for testing with corr_matrix[1,2] = corr_matrix[2,1] = {0,1}
-  //
-  // corr_matrix[2] omega;
+  vector<lower=0>[8] tau;
+  vector[8] zero;
 
-  for (i in 1:2) {
+  for (i in 1:8) {
     zero[i] <- 0.0;
     tau[i] <- 1.0;
   }
-
-  // should match gi-plus-dbh-uncoupled.stan
-  //
-  // omega[1,1] <- tau[1];
-  // omega[1,2] <- 0.0;
-  // omega[2,1] <- omega[1,2];
-  // omega[2,2] <- tau[2];
-
-  // should match gi-plus-dbh.stan
-  //
-  // omega[1,1] <- tau[1];
-  // omega[1,2] <- 0.99;
-  // omega[2,1] <- omega[1,2];
-  // omega[2,2] <- tau[2];
-
 
   // for growth increment component of the model
   //
@@ -141,10 +117,10 @@ transformed parameters {
 
   // for dbh component of the model
   //
-  gamma_radiation_dbh <- gamma_radiation[1];
-  gamma_slope_dbh <- gamma_slope[1];
-  gamma_aspect_dbh <- gamma_aspect[1];
-  gamma_twi_dbh <- gamma_twi[1];
+  gamma_radiation_dbh <- gamma[1];
+  gamma_slope_dbh <- gamma[2];
+  gamma_aspect_dbh <- gamma[3];
+  gamma_twi_dbh <- gamma[4];
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_size*tree_size[i]
                      + beta_height_ratio*height_ratio[i]
@@ -158,10 +134,10 @@ transformed parameters {
 
   // shared component at individual level
   //
-  gamma_radiation_gi <- gamma_radiation[2];
-  gamma_slope_gi <- gamma_slope[2];
-  gamma_aspect_gi <- gamma_aspect[2];
-  gamma_twi_gi <- gamma_twi[2];
+  gamma_radiation_gi <- gamma[5];
+  gamma_slope_gi <- gamma[6];
+  gamma_aspect_gi <- gamma[7];
+  gamma_twi_gi <- gamma[8];
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
@@ -190,14 +166,8 @@ model {
   sigma_species ~ normal(0.0, 1.0);
   // prior for shared components
   //
-  omega_radiation ~ lkj_corr(2.0);
-  omega_slope ~ lkj_corr(2.0);
-  omega_aspect ~ lkj_corr(2.0);
-  omega_twi ~ lkj_corr(2.0);
-  gamma_radiation ~ multi_normal(zero, quad_form_diag(omega_radiation, tau));
-  gamma_slope ~ multi_normal(zero, quad_form_diag(omega_slope, tau));
-  gamma_aspect ~ multi_normal(zero, quad_form_diag(omega_aspect, tau));
-  gamma_twi ~ multi_normal(zero, quad_form_diag(omega_twi, tau));
+  omega ~ lkj_corr(2.0);
+  gamma ~ multi_normal(zero, quad_form_diag(omega, tau));
 
   // likelihood for growth increment component
   //
