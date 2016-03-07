@@ -20,7 +20,7 @@ standardize <- function(x) {
 
 ## read in the DBH data and convert plot to factor
 ##
-dbh <- read.csv("mCNallDBH3.csv", header=TRUE)
+dbh <- read.csv("MCNallDBH3.csv", header=TRUE)
 dbh$plot <- as.factor(dbh$plot)
 ## exclude individuals without species label
 ##
