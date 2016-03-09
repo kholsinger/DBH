@@ -1,3 +1,5 @@
+setwd("C:/Users/eth_admin/Documents/GitHub/DBH")
+
 library(reshape)
 library(rstan)
 
@@ -7,7 +9,7 @@ debug <- FALSE
 compare <- FALSE
 coupled <- FALSE
 correlated <- FALSE
-multi_correlated <- TRUE
+multi_correlated <- FALSE
 save <- TRUE
 
 save <- save & !debug
