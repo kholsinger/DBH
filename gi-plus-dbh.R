@@ -7,12 +7,15 @@ debug <- FALSE
 compare <- FALSE
 coupled <- FALSE
 correlated <- FALSE
-multi_correlated <- TRUE
+multi_correlated <- FALSE
+multi_with_size <- TRUE
 save <- TRUE
 
 save <- save & !debug
 
-if (multi_correlated) {
+if (multi_with_size) {
+  model.file <- "gi-plus-dbh-multi-correlated-with-size.stan"
+} else if (multi_correlated) {
   model.file <- "gi-plus-dbh-multi-correlated.stan"
 } else if (correlated) {
   model.file <- "gi-plus-dbh-correlated.stan"
@@ -61,7 +64,7 @@ strip.rwl <- function(x) {
 extract.tree.number <- function(x, site) {
   y <- sub(site, "",x)
   y <- sub("[abABN]", "", y, perl=TRUE)
-  y <- substring(y, 1, 4)
+  y <- as.numeric(substring(y, 1, 4))
   return(y)
 }
 
@@ -144,6 +147,8 @@ data <- subset(data, site!="154.rwl")
 ## standardize now so that these covariates match between the gi data
 ## and the dbh data
 ##
+dbh$Tree.height <- standardize(dbh$Tree.height)
+dbh$height.ratio <- standardize(dbh$height.ratio)
 dbh$total <- standardize(dbh$total)
 dbh$Slope <- standardize(dbh$Slope)
 dbh$Aspect <- standardize(dbh$Aspect)
@@ -178,6 +183,8 @@ data <- droplevels(data)
 gi.years <- years[1:(length(years)-1)]
 gi <- data[,gi.years]
 site_gi <- as.numeric(as.factor(data$plot))
+tree_size_gi <- data$Tree.height
+height_ratio_gi <- data$height.ratio
 radiation_gi <- data$total
 slope_gi <- data$Slope
 aspect_gi <- data$Aspect
@@ -192,8 +199,8 @@ tmn <- standardize(tmn)
 ## dbh data
 ##
 dbh_inc <- standardize(dbh$T2_BasalArea - dbh$T1_BasalArea)
-tree_size <- standardize(dbh$Tree.height)
-height_ratio <- standardize(dbh$height.ratio)
+tree_size <- dbh$Tree.height
+height_ratio <- dbh$height.ratio
 site_dbh <- as.numeric(as.factor(dbh$plot))
 species <- as.numeric(dbh$Species)
 radiation <- dbh$total
@@ -264,6 +271,62 @@ if (multi_correlated) {
 } else if (coupled) {
   stan.pars <- c(stan.pars, "alpha")
 }
+if (multi_with_size) {
+  stan.data <- list(gi=gi,
+                    site_gi=site_gi,
+                    tree_size_gi=tree_size_gi,
+                    height_ratio_gi=height_ratio_gi,
+                    radiation_gi=radiation_gi,
+                    slope_gi=slope_gi,
+                    aspect_gi=aspect_gi,
+                    twi_gi=twi_gi,
+                    ppt=ppt,
+                    tmn=tmn,
+                    n_years=n.years,
+                    n_indiv=n.indiv,
+                    n_sites_gi=n_sites_gi,
+                    n_months=n.months,
+                    dbh_inc=dbh_inc,
+                    tree_size-tree_size,
+                    height_ratio=height_ratio,
+                    slope=slope,
+                    aspect=aspect,
+                    twi=twi,
+                    site_dbh=site_dbh,
+                    species=species,
+                    n_sites_dbh=n_sites_dbh,
+                    n_obs=n_obs,
+                    n_species=n_species)
+  stan.pars <- c("beta_0_gi",
+                 "beta_ppt",
+                 "beta_tmn",
+                 "mu_year",
+                 "mu_indiv",
+                 "sigma_indiv",
+                 "sigma_site_gi",
+                 "eta_sq",
+                 "rho_sq",
+                 "sigma_sq",
+                 "beta_0_dbh",
+                 "beta_size_dbh",
+                 "beta_height_ratio_dbh",
+                 "gamma_radiation_dbh",
+                 "gamma_slope_dbh",
+                 "gamma_aspect_dbh",
+                 "gamma_twi_dbh",
+                 "beta_size_gi",
+                 "beta_height_ratio_gi",
+                 "gamma_radiation_gi",
+                 "gamma_slope_gi",
+                 "gamma_aspect_gi",
+                 "gamma_twi_gi",
+                 "sigma_resid",
+                 "sigma_site_dbh",
+                 "sigma_species",
+                 "log_lik_gi",
+                 "log_lik_dbh",
+                 "omega")
+}
 fit <- stan(file=model.file,
             data=stan.data,
             pars=stan.pars,
@@ -281,7 +344,10 @@ cat("\n\n************************************************************\n",
 cat(date(), "\n",
     "With Gaussian process model for individuals\n",
     sep="")
-if (multi_correlated) {
+if (multi_with_size) {
+  cat("   gi and dbh regression multivariate correlated\n", sep="")
+  cat("   tree_size and height_ratio included as covariates in gi\n", sep="")
+} else if (multi_correlated) {
   cat("   gi and dbh regression multivariate correlated\n", sep="")
 } else if (correlated) {
   cat("   gi and dbh regression correlated\n", sep="")
@@ -332,6 +398,33 @@ if (multi_correlated) {
 } else if (coupled) {
   print.pars <- c(print.pars, "alpha")
 }
+if (multi_with_size) {
+  print.pars <- c("beta_0_gi",
+                  "beta_ppt",
+                  "beta_tmn",
+                  "sigma_indiv",
+                  "sigma_site_gi",
+                  "eta_sq",
+                  "rho_sq",
+                  "sigma_sq",
+                  "beta_0_dbh",
+                  "beta_size_dbh",
+                  "beta_height_ratio_dbh",
+                  "gamma_radiation_dbh",
+                  "gamma_slope_dbh",
+                  "gamma_aspect_dbh",
+                  "gamma_twi_dbh",
+                  "beta_size_gi",
+                  "beta_height_ratio_gi",
+                  "gamma_radiation_gi",
+                  "gamma_slope_gi",
+                  "gamma_aspect_gi",
+                  "gamma_twi_gi",
+                  "sigma_resid",
+                  "sigma_site_dbh",
+                  "sigma_species",
+                  "omega")
+}
 print(fit,
       pars=print.pars,
       digits_summary=3)
@@ -351,7 +444,10 @@ if (0) {
 }
 options(opt.old)
 if (save) {
-  if (multi_correlated) {
+  if (multi_with_size) {
+    save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
+         file="results-gi-plus-dbh-multi-correlated-with-size.Rsave")
+  } else if (multi_correlated) {
     save(fit, data, ppt, tmn, dbh, n.months, start.series, end.series,
          file="results-gi-plus-dbh-multi-correlated.Rsave")
   } else if (correlated) {
