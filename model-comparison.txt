@@ -1,12 +1,14 @@
 Growth Increment component
-                     looic     se_looic  elpd_loo  se_elpd_loo p_loo
+                     looic     se_looic  elpd_loo  se_elpd_loo p_loo    
 loo_uncoupled         2559.545   421.463 -1279.773   210.732     153.892
 loo_multi_correlated  2561.762   421.234 -1280.881   210.617     155.325
+loo_multi_size        2564.189   422.929 -1282.094   211.465     156.752
 loo_coupled           2564.387   422.441 -1282.194   211.221     156.775
 loo_correlated        2567.966   421.696 -1283.983   210.848     158.639
-                     se_p_loo
+                     se_p_loo 
 loo_uncoupled           11.343
 loo_multi_correlated    11.467
+loo_multi_size          12.292
 loo_coupled             12.096
 loo_correlated          12.001
 
@@ -17,3 +19,4 @@ loo_multi_correlated 1387.839   93.034 -693.919   46.517      24.593    8.037
 loo_coupled          1387.873   93.493 -693.936   46.747      24.070    7.839
 loo_correlated       1387.890   92.737 -693.945   46.369      23.958    7.571
 loo_uncoupled        1388.398   93.556 -694.199   46.778      24.559    7.938
+loo_multi_size       1389.244   94.393 -694.622   47.196      25.185    8.665
