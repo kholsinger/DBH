@@ -1,0 +1,60 @@
+#### JAGS code for latent process model 
+#### fusing/assimilating tree-ring and DBH data
+
+#### x is "true" diameter
+#### inc is "true" diameter increment from one year to the next
+
+#### z is observed diameter
+#### tau_dbh is measurement error for dbh data
+
+#### y is observed diameter increment
+#### tau_inc is measurement error for diameter increment data
+
+#### mu is average "true" diameter increment
+#### ind is individual rnd effect on "true" diameter increment
+#### year is year rnd effect on "true" diameter increment
+
+model{
+  
+  ### Loop over all individuals
+  for(i in 1:ni){
+    
+    #### Data Model: DBH
+    for(t in 1:nt){
+      z[i,t] ~ dnorm(x[i,t],tau_dbh)
+    }
+    
+    #### Data Model: growth
+    for(t in 2:nt){
+      inc[i,t] <- x[i,t]-x[i,t-1]
+      y[i,t] ~ dnorm(inc[i,t],tau_inc)
+    }
+    
+    #### Process Model
+    for(t in 2:nt){
+      Dnew[i,t] <- x[i,t-1] + mu + ind[i] + year[t] # this is where tree-level and plot-level covariates would be added
+      x[i,t]~dnorm(Dnew[i,t],tau_add)
+    }
+    
+    ## individual effects
+    ind[i] ~ dnorm(0,tau_ind)
+    
+    ## initial condition
+    x[i,1] ~ dnorm(x_ic,tau_ic)
+  }  ## end loop over individuals
+  
+  ## year effects
+  for(t in 1:nt){
+    year[t] ~ dnorm(0,tau_yr)
+  }
+  
+  
+  #### Priors
+  tau_dbh ~ dgamma(a_dbh,r_dbh)
+  tau_inc ~ dgamma(a_inc,r_inc)
+  tau_add ~ dgamma(a_add,r_add)
+  tau_ind ~ dgamma(1,0.1)
+  tau_yr  ~ dgamma(1,0.1)
+  mu ~ dnorm(0.5,0.5)
+  
+}
