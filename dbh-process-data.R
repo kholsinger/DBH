@@ -61,23 +61,40 @@ dbh <- droplevels(dbh)
 
 ## read in and summarize radiation data
 ##
-radiation <- read.csv("mcn_plots_rsun_hours_global_radiation_utm.csv",
-                      header=TRUE)
-radiation$total <- apply(radiation[,grep("total", colnames(radiation))], 1, sum)
+#radiation <- read.csv("mcn_plots_rsun_hours_global_radiation_utm.csv",
+#                      header=TRUE)
+#radiation$total <- apply(radiation[,grep("total", colnames(radiation))], 1, sum)
 
 ## read in and summarize DEM data
 ##
-dem <- read.csv("mcn_plots_topographic_variables_SAGAGIS.csv")
+#dem <- read.csv("mcn_plots_topographic_variables_SAGAGIS.csv")
+
+## read in and summarize all plot-level covariates
+plot.cov <- read.csv("MCNplotCovariatesNEW.csv", header=TRUE)
+plot.cov$Fire2012 <- as.factor(plot.cov$Fire2012)
+plot.cov$soil <- as.factor(plot.cov$soil)
+plot.cov$substrate <- as.factor(plot.cov$substrate)
 
 ## merge radiation and DEM data into dbh
 ##
-dbh <- merge(dbh, radiation, by.x="plot", by.y="ID")
-dbh <- merge(dbh, dem, by.x="plot", by.y="ID")
+#dbh <- merge(dbh, radiation, by.x="plot", by.y="ID")
+#dbh <- merge(dbh, dem, by.x="plot", by.y="ID")
+dbh <- merge(dbh, plot.cov, by.x="plot", by.y="PLOT")
 
 ## extract plot-level covariates and index
 plot.level <- data.frame(plot=dbh$plot,
-                         radiation=dbh$total,
+                         radiation=dbh$radiation,
                          slope=dbh$Slope,
                          aspect=dbh$Aspect,
-                         twi=dbh$TWI)
+                         twi=dbh$SagaTWI,
+                         elev=dbh$DEM,
+                         fire=dbh$Fire2012,
+                         soil=dbh$soil,
+                         substrate=dbh$substrate,
+                         pba=dbh$BA2004,
+                         TRMI100=dbh$TRMI100,
+                         TRMI250=dbh$TRMI250,
+                         TRMI500=dbh$TRMI500,
+                         TRMI1000=dbh$TRMI1000,
+                         TRMI2000=dbh$TRMI2000)
 
