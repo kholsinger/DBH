@@ -226,12 +226,12 @@ transformed parameters {
   gamma_trmi2000_gi <- gamma[34];  
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- beta_tba_gi*tBA_gi[i]
-                      + beta_ht_gi*height_gi
+                      + beta_ht_gi*height_gi[i]
                       + beta_height_ratio_gi*height_ratio_gi[i]
                       + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
-                      + gamma_elev_gi*elev_gi
+                      + gamma_elev_gi*elev_gi[i]
                       + gamma_twi_gi*twi_gi[i]
                       + gamma_fire_gi*fire_gi[i]
                       + gamma_soil_gi*soil_gi[i]

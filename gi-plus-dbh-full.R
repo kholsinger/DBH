@@ -150,17 +150,17 @@ data <- subset(data, site!="154.rwl")
 dbh$Tree.height <- standardize(dbh$Tree.height)
 dbh$height.ratio <- standardize(dbh$height.ratio)
 dbh$T1_BasalArea <- standardize(dbh$T1_BasalArea)
-dbh$total <- standardize(dbh$radiation)
+dbh$radiation <- standardize(dbh$radiation)
 dbh$Slope <- standardize(dbh$Slope)
 dbh$Aspect <- standardize(dbh$Aspect)
-dbh$Elev <- standardize(dbh$DEM)
-dbh$TWI <- standardize(dbh$SagaTWI)
+dbh$DEM <- standardize(dbh$DEM)
+dbh$SagaTWI <- standardize(dbh$SagaTWI)
 dbh$pBA <- standardize(dbh$BA2004)
-dbh$trmi100 <- standardize(dbh$TRMI100)
-dbh$trmi100 <- standardize(dbh$TRMI100)
-dbh$trmi100 <- standardize(dbh$TRMI100)
-dbh$trmi100 <- standardize(dbh$TRMI100)
-dbh$trmi100 <- standardize(dbh$TRMI100)
+dbh$TRMI100 <- standardize(dbh$TRMI100)
+dbh$TRMI250 <- standardize(dbh$TRMI250)
+dbh$TRMI500 <- standardize(dbh$TRMI500)
+dbh$TRMI1000 <- standardize(dbh$TRMI1000)
+dbh$TRMI2000 <- standardize(dbh$TRMI2000)
 ## exclude any individuals with NA for row
 ##
 data <- data[apply(data, 1, not.is.na.in.row),]
@@ -198,7 +198,7 @@ radiation_gi <- data$radiation
 slope_gi <- data$Slope
 aspect_gi <- data$Aspect
 elev_gi <- data$DEM
-twi_gi <- data$TWI
+twi_gi <- data$SagaTWI
 fire_gi <- data$Fire2012
 soil_gi <- data$soil
 substrate_gi <- data$substrate
