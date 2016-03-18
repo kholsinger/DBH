@@ -97,4 +97,3 @@ plot.level <- data.frame(plot=dbh$plot,
                          TRMI500=dbh$TRMI500,
                          TRMI1000=dbh$TRMI1000,
                          TRMI2000=dbh$TRMI2000)
-

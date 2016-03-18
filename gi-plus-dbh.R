@@ -149,10 +149,10 @@ data <- subset(data, site!="154.rwl")
 ##
 dbh$Tree.height <- standardize(dbh$Tree.height)
 dbh$height.ratio <- standardize(dbh$height.ratio)
-dbh$total <- standardize(dbh$total)
+dbh$total <- standardize(dbh$radiation)
 dbh$Slope <- standardize(dbh$Slope)
 dbh$Aspect <- standardize(dbh$Aspect)
-dbh$TWI <- standardize(dbh$TWI)
+dbh$TWI <- standardize(dbh$SagaTWI)
 ## exclude any individuals with NA for row
 ##
 data <- data[apply(data, 1, not.is.na.in.row),]
@@ -240,6 +240,7 @@ stan.pars <- c("beta_0_gi",
                "beta_tmn",
                "mu_year",
                "mu_indiv",
+               "mu_site",
                "sigma_indiv",
                "sigma_site_gi",
                "eta_sq",
@@ -302,6 +303,7 @@ if (multi_with_size) {
                  "beta_tmn",
                  "mu_year",
                  "mu_indiv",
+                 "mu_site",
                  "sigma_indiv",
                  "sigma_site_gi",
                  "eta_sq",
@@ -369,6 +371,7 @@ cat(before - after,
 print.pars <- c("beta_0_gi",
                 "beta_ppt",
                 "beta_tmn",
+                "mu_site",
                 "sigma_indiv",
                 "sigma_site_gi",
                 "eta_sq",
@@ -402,6 +405,7 @@ if (multi_with_size) {
   print.pars <- c("beta_0_gi",
                   "beta_ppt",
                   "beta_tmn",
+                  "mu_site",
                   "sigma_indiv",
                   "sigma_site_gi",
                   "eta_sq",
