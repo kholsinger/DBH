@@ -6,20 +6,36 @@
 ## .Rsave file and retrieve them to set equivalent parameters here
 ##
 library(ggplot2)
-library(R2jags)
 
 rm(list=ls())
 
 debug <- FALSE
-jags <- TRUE
+jags <- FALSE
+stan <- TRUE
 
-## load posterior estimates from JAGS analysis
-##
-results.file <- "results.Rsave"
-load(file=results.file)
-beta.ppt <- fit$BUGSoutput$sims.list$beta.ppt
-beta.tmn <- fit$BUGSoutput$sims.list$beta.tmn
-n.iter <- nrow(beta.ppt)
+clean <- function(x) {
+  y <- sub(".1|.2", "", x)
+  return(y)
+}
+
+if (jags) {
+  library(R2jags)
+  ## load posterior estimates from JAGS analysis
+  ##
+  results.file <- "results.Rsave"
+  load(file=results.file)
+  beta.ppt <- fit$BUGSoutput$sims.list$beta.ppt
+  beta.tmn <- fit$BUGSoutput$sims.list$beta.tmn
+  n.iter <- nrow(beta.ppt)
+} else if (stan) {
+  library(rstan)
+  ## load posterior estimates from Stan analysis
+  results.file <- "results-gi-plus-dbh-multi-correlated-with-size.Rsave"
+  load(file=results.file)
+  beta.ppt <- extract(fit, pars=c("beta_ppt"))$beta_ppt
+  beta.tmn <- extract(fit, pars=c("beta_tmn"))$beta_tmn
+  n.iter <- nrow(beta.ppt)
+}
 
 ## load covariates and convert to format used in JAGS analysis
 ##
@@ -63,6 +79,28 @@ if (jags) {
   opt.old <- options(width=180)
   print(fit, digits.summary=3)
   options(opt.old)
+} else if (stan) {
+  n_obs <- nrow(covars)
+  n_cov <- ncol(covars)
+  covars <- standardize(covars)
+  stan.data <- list(n_cov=n_cov,
+                    n_obs=n_obs,
+                    covars=covars)
+  stan.pars <- c("rho",
+                 "tau",
+                 "mu")
+  fit <- stan(file="bivariate.stan",
+              data=stan.data,
+              pars=stan.pars,
+              iter=2500,
+              warmup=1250,
+              thin=1,
+              chains=4,
+              cores=4)
+  corr <- extract(fit, pars=c("rho"))$rho
+  opt.old <- options(width=180)
+  print(fit, digits=3)
+  options(opt.old)
 } else {
   corr <- cor(covars)
 }
@@ -73,10 +111,10 @@ correlation <- numeric(0)
 for (i in 1:ncol(corr)) {
   if (i <= length(months)) {
     covar.name <- "PPT"
-    month.name <- months[i]
-  } else {
+    month.name <- clean(months[i])
+   } else {
     covar.name <- "TmeanC"
-    month.name <- months[i-length(months)]
+    month.name <- clean(months[i-length(months)])
   }
   for (k in 1:n.iter) {
     tmp <- 0.0
@@ -86,7 +124,7 @@ for (i in 1:ncol(corr)) {
       } else {
         part.corr <- beta.tmn[k,(j-length(months))]
       }
-      if (jags) {
+      if (jags | stan) {
         tmp <- tmp + corr[k,i,j]*part.corr
       } else {
         tmp <- tmp + corr[i,j]*part.corr
@@ -101,11 +139,12 @@ for (i in 1:ncol(corr)) {
 for.plot <- data.frame(Month=month,
                        Covariate=covariate,
                        Correlation=correlation)
-for.plot$Month <- factor(for.plot$Month, levels=months)
+for.plot$Month <- factor(for.plot$Month, levels=clean(months))
 
 p <- ggplot(for.plot, aes(x=Month, y=Correlation)) +
      geom_hline(yintercept=0, linetype="dashed") +
-     geom_boxplot() +
+     geom_boxplot(width=0.2, fill="dark blue", outlier.colour="dark blue") +
+     stat_summary(fun.y=median, geom="point", fill="white", shape=21, size=2.5) +
      facet_grid(Covariate ~ .)
 print(p)
 

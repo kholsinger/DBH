@@ -52,7 +52,8 @@ parameters {
   real<lower=0> sigma_site_dbh;
   real<lower=0> sigma_species;
   vector[n_sites_dbh] eps_site;
-  vector[n_species] eps_species;
+  // vector[n_species] eps_species;
+  vector[n_species-1] eps_species_raw;
 
   // for the connection
   //
@@ -87,6 +88,8 @@ transformed parameters {
   real gamma_twi_gi;
   vector<lower=0>[12] tau;
   vector[12] zero;
+  vector[n_species] eps_species;
+
 
   for (i in 1:12) {
     zero[i] <- 0.0;
@@ -127,6 +130,10 @@ transformed parameters {
   gamma_slope_dbh <- gamma[4];
   gamma_aspect_dbh <- gamma[5];
   gamma_twi_dbh <- gamma[6];
+  for (i in 1:(n_species-1)) {
+    eps_species[i] <- eps_species_raw[i];
+  }
+  eps_species[n_species] <- -sum(eps_species_raw);
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_size_dbh*tree_size[i]
                      + beta_height_ratio_dbh*height_ratio[i]
@@ -193,7 +200,7 @@ model {
 
   // likelihood for dbh component
   //
-  eps_species ~ normal(0.0, sigma_species);
+  eps_species_raw ~ normal(0.0, sigma_species);
   eps_site ~ normal(beta_0_dbh, sigma_site_dbh);
   dbh_inc ~ normal(mu_dbh_inc, sigma_resid);
 }

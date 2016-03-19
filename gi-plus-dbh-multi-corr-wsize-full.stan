@@ -15,7 +15,7 @@ data {
   vector[n_indiv] radiation_gi;
   vector[n_indiv] slope_gi;
   vector[n_indiv] aspect_gi;
-  vector[n_indiv] elev_gi;  
+  vector[n_indiv] elev_gi;
   vector[n_indiv] twi_gi;
   vector[n_indiv] pBA_gi;
   vector[n_indiv] fire_gi;
@@ -26,7 +26,7 @@ data {
   vector[n_indiv] trmi500_gi;
   vector[n_indiv] trmi1000_gi;
   vector[n_indiv] trmi2000_gi;
-  
+
 
   // for dbh component
   //
@@ -40,7 +40,7 @@ data {
   vector[n_obs] radiation;
   vector[n_obs] slope;
   vector[n_obs] aspect;
-  vector[n_obs] elev;  
+  vector[n_obs] elev;
   vector[n_obs] twi;
   vector[n_obs] pBA;
   vector[n_obs] fire;
@@ -102,7 +102,7 @@ transformed parameters {
   real gamma_radiation_dbh;
   real gamma_slope_dbh;
   real gamma_aspect_dbh;
-  real gamma_elev_dbh;  
+  real gamma_elev_dbh;
   real gamma_twi_dbh;
   real gamma_fire_dbh;
   real gamma_soil_dbh;
@@ -112,14 +112,14 @@ transformed parameters {
   real gamma_trmi250_dbh;
   real gamma_trmi500_dbh;
   real gamma_trmi1000_dbh;
-  real gamma_trmi2000_dbh;  
+  real gamma_trmi2000_dbh;
   real beta_tba_gi;
   real beta_ht_gi;
   real beta_height_ratio_gi;
   real gamma_radiation_gi;
   real gamma_slope_gi;
   real gamma_aspect_gi;
-  real gamma_elev_gi;  
+  real gamma_elev_gi;
   real gamma_twi_gi;
   real gamma_fire_gi;
   real gamma_soil_gi;
@@ -129,7 +129,7 @@ transformed parameters {
   real gamma_trmi250_gi;
   real gamma_trmi500_gi;
   real gamma_trmi1000_gi;
-  real gamma_trmi2000_gi; 
+  real gamma_trmi2000_gi;
   vector<lower=0>[12] tau;
   vector[12] zero;
 
@@ -167,22 +167,22 @@ transformed parameters {
   // for dbh component of the model
   //
   beta_tba_dbh <- gamma[1];
-  beta_ht_dbh <- gamma[2];  
+  beta_ht_dbh <- gamma[2];
   beta_height_ratio_dbh <- gamma[3];
   gamma_radiation_dbh <- gamma[4];
   gamma_slope_dbh <- gamma[5];
   gamma_aspect_dbh <- gamma[6];
-  gamma_elev_dbh <- gamma[7];  
+  gamma_elev_dbh <- gamma[7];
   gamma_twi_dbh <- gamma[8];
   gamma_fire_dbh <- gamma[9];
   gamma_soil_dbh <- gamma[10];
-  gamma_substrate_dbh <- gamma[11];  
-  gamma_pba_dbh <- gamma[12];  
+  gamma_substrate_dbh <- gamma[11];
+  gamma_pba_dbh <- gamma[12];
   gamma_trmi100_dbh <- gamma[13];
   gamma_trmi250_dbh <- gamma[14];
   gamma_trmi500_dbh <- gamma[15];
   gamma_trmi1000_dbh <- gamma[16];
-  gamma_trmi2000_dbh <- gamma[17];  
+  gamma_trmi2000_dbh <- gamma[17];
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_tba_dbh*tBA[i]
                      + beta_ht_dbh*height[i]
@@ -208,22 +208,22 @@ transformed parameters {
   // shared component at individual level
   //
   beta_tba_gi <- gamma[18];
-  beta_ht_gi <- gamma[19];  
+  beta_ht_gi <- gamma[19];
   beta_height_ratio_gi <- gamma[20];
   gamma_radiation_gi <- gamma[21];
   gamma_slope_gi <- gamma[22];
   gamma_aspect_gi <- gamma[23];
   gamma_elev_gi <- gamma[24];
-  gamma_twi_gi <- gamma[25];  
-  gamma_fire_gi <- gamma[26];  
-  gamma_soil_gi <- gamma[27];  
-  gamma_substrate_gi <- gamma[28];  
-  gamma_pba_gi <- gamma[29];  
-  gamma_trmi100_gi <- gamma[30];  
-  gamma_trmi250_gi <- gamma[31];  
-  gamma_trmi500_gi <- gamma[32];  
-  gamma_trmi1000_gi <- gamma[33];  
-  gamma_trmi2000_gi <- gamma[34];  
+  gamma_twi_gi <- gamma[25];
+  gamma_fire_gi <- gamma[26];
+  gamma_soil_gi <- gamma[27];
+  gamma_substrate_gi <- gamma[28];
+  gamma_pba_gi <- gamma[29];
+  gamma_trmi100_gi <- gamma[30];
+  gamma_trmi250_gi <- gamma[31];
+  gamma_trmi500_gi <- gamma[32];
+  gamma_trmi1000_gi <- gamma[33];
+  gamma_trmi2000_gi <- gamma[34];
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- beta_tba_gi*tBA_gi[i]
                       + beta_ht_gi*height_gi[i]
