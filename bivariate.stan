@@ -10,7 +10,7 @@ parameters {
 }
 model {
   tau ~ cauchy(0.0, 2.5);
-  rho ~ lkj_corr(2);
+  rho ~ lkj_corr(2.0);
   mu ~ normal(0.0, 1.0);
   for (i in 1:n_obs) {
     covars[i] ~ multi_normal(mu, quad_form_diag(rho, tau));
