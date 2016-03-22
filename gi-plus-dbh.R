@@ -8,7 +8,7 @@ compare <- FALSE
 coupled <- FALSE
 correlated <- FALSE
 multi_correlated <- FALSE
-multi_with_size <- TRUE
+multi_with_size <- FALSE
 save <- TRUE
 
 save <- save & !debug
