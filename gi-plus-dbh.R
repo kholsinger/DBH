@@ -5,10 +5,11 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-coupled <- FALSE
+uncoupled <- FALSE
+coupled <- TRUE
 correlated <- FALSE
 multi_correlated <- FALSE
-multi_with_size <- TRUE
+multi_with_size <- FALSE
 save <- TRUE
 
 save <- save & !debug
@@ -21,8 +22,10 @@ if (multi_with_size) {
   model.file <- "gi-plus-dbh-correlated.stan"
 } else if (coupled) {
   model.file <- "gi-plus-dbh.stan"
-} else {
+} else if (uncoupled) {
   model.file <- "gi-plus-dbh-uncoupled.stan"
+} else {
+  stop("Mis-specification of model")
 }
 
 ## MCMC settings
@@ -270,7 +273,14 @@ if (multi_correlated) {
                  "omega_aspect",
                  "omega_twi")
 } else if (coupled) {
-  stan.pars <- c(stan.pars, "alpha")
+  stan.pars <- c(stan.pars,
+                 "alpha",
+                 "beta_size_gi",
+                 "beta_height_ratio_gi")
+} else if (uncoupled) {
+  stan.pars <- c(stan.pars,
+                 "beta_size_gi",
+                 "beta_height_ratio_gi")
 }
 if (multi_with_size) {
   stan.data <- list(gi=gi,
@@ -399,7 +409,14 @@ if (multi_correlated) {
                   "omega_aspect",
                   "omega_twi")
 } else if (coupled) {
-  print.pars <- c(print.pars, "alpha")
+  print.pars <- c(print.pars,
+                  "alpha",
+                  "beta_size_gi",
+                  "beta_height_ratio_gi")
+} else if (uncoupled) {
+  print.pars <- c(print.pars,
+                  "beta_size_gi",
+                  "beta_height_ratio_gi")
 }
 if (multi_with_size) {
   print.pars <- c("beta_0_gi",
