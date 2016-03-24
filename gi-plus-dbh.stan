@@ -76,6 +76,8 @@ transformed parameters {
   vector[n_obs] alpha_indiv;
   // for shared component of the model, scaled by alpha from dbh component
   //
+  real beta_size_gi;
+  real beta_height_ratio_gi;
   real gamma_radiation_gi;
   real gamma_slope_gi;
   real gamma_aspect_gi;
@@ -123,12 +125,16 @@ transformed parameters {
   // shared component at individual level, alpha scales
   // regression coefficients from dbh component to gi component
   //
+  beta_size_gi <- alpha*beta_size;
+  beta_height_ratio_gi <- alpha*beta_height_ratio;
   gamma_radiation_gi <- alpha*gamma_radiation_dbh;
   gamma_slope_gi <- alpha*gamma_slope_dbh;
   gamma_aspect_gi <- alpha*gamma_aspect_dbh;
   gamma_twi_gi <- alpha*gamma_twi_dbh;
   for (i in 1:n_indiv) {
-    alpha_indiv[i] <- gamma_radiation_gi*radiation_gi[i]
+    alpha_indiv[i] <- beta_size_gi*tree_size[i]
+                      + beta_height_ratio_gi*height_ratio[i]
+                      + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
                       + gamma_twi_gi*twi_gi[i];

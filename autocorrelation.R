@@ -40,20 +40,20 @@ autocorr <- function(fit, n.years) {
   return(list(sigma=apply(sigma, 2, mean), rho=apply(rho, 2, mean)))
 }
 
-cat("With raw data\n")
-load("results-stan-raw-data.Rsave")
-raw <- autocorr(fit, max(year))
-cat("With detrended data\n")
-load("results-stan.Rsave")
-detrend <- autocorr(fit, max(year))
+cat("Uncoupled model\n")
+load("results-gi-plus-dbh-uncoupled.Rsave")
+coupled <- autocorr(fit, max(year))
+cat("Coupled model\n")
+load("results-gi-plus-dbh.Rsave")
+uncoupled <- autocorr(fit, max(year))
 
-raw.rho <- data.frame(Autocorrelation=raw$rho,
-                      Lag=seq(0, length(raw$rho)-1, by=1),
-                      Data="Raw data")
-det.rho <- data.frame(Autocorrelation=detrend$rho,
-                      Lag=seq(0, length(detrend$rho)-1, by=1),
-                      Data="Detrended data")
-for.plot <- rbind(raw.rho, det.rho)
+coupled.rho <- data.frame(Autocorrelation=coupled$rho,
+                      Lag=seq(0, length(coupled$rho)-1, by=1),
+                      Data="Coupled data")
+uncoupled.rho <- data.frame(Autocorrelation=uncoupled$rho,
+                      Lag=seq(0, length(uncoupled$rho)-1, by=1),
+                      Data="Uncoupled data")
+for.plot <- rbind(coupled.rho, uncoupled.rho)
 for.plot <- subset(for.plot, Lag > 0)
 
 p <- ggplot(for.plot, aes(x=Lag, y=Autocorrelation, color=Data)) +

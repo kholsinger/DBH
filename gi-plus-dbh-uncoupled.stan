@@ -42,6 +42,8 @@ parameters {
   real<lower=0> eta_sq;
   real<lower=0> inv_rho_sq;
   real<lower=0> sigma_sq;
+  real beta_size_gi;
+  real beta_height_ratio_gi;
   real gamma_radiation_gi;
   real gamma_slope_gi;
   real gamma_aspect_gi;
@@ -117,7 +119,9 @@ transformed parameters {
   // regression coefficients from dbh component to gi component
   //
   for (i in 1:n_indiv) {
-    alpha_indiv[i] <- gamma_radiation_gi*radiation_gi[i]
+    alpha_indiv[i] <- beta_size_gi*tree_size[i]
+                      + beta_height_ratio_gi*height_ratio[i]
+                      + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
                       + gamma_twi_gi*twi_gi[i];
@@ -137,6 +141,8 @@ model {
   eta_sq ~ normal(0.0, 1.0);
   inv_rho_sq ~ normal(0.0, 1.0);
   sigma_sq ~ normal(0.0, 1.0);
+  beta_size_gi ~ normal(0.0, 1.0);
+  beta_height_ratio_gi ~ normal(0.0, 1.0);
   gamma_radiation_gi ~ normal(0.0, 1.0);
   gamma_slope_gi ~ normal(0.0, 1.0);
   gamma_aspect_gi ~ normal(0.0, 1.0);
