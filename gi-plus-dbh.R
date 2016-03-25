@@ -147,6 +147,13 @@ source("dbh-process-data.R")
 ##
 dbh <- subset(dbh, plot!="154")
 data <- subset(data, site!="154.rwl")
+
+## exclude single outlier in dbh data
+dbh <- subset(dbh, Tree.number!="669")
+
+## exclude single outlier in gi data
+data <- subset(data, id!="1372175A")
+
 ## standardize now so that these covariates match between the gi data
 ## and the dbh data
 ##
