@@ -149,10 +149,10 @@ dbh <- subset(dbh, plot!="154")
 data <- subset(data, site!="154.rwl")
 
 ## exclude single outlier in dbh data
-dbh <- subset(dbh, Tree.number!="669")
+dbh <- subset(dbh, Tree.number!="691")
 
 ## exclude single outlier in gi data
-data <- subset(data, id!="1372175A")
+data <- subset(data, id!="1560562a")
 
 ## standardize now so that these covariates match between the gi data
 ## and the dbh data
