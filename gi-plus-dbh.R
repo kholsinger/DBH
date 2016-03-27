@@ -158,6 +158,7 @@ data <- subset(data, id!="1560562a")
 ## and the dbh data
 ##
 dbh$Tree.height <- standardize(dbh$Tree.height)
+dbh$T1_BasalArea <- standardize(dbh$T1_BasalArea)
 dbh$height.ratio <- standardize(dbh$height.ratio)
 dbh$total <- standardize(dbh$radiation)
 dbh$Slope <- standardize(dbh$Slope)
@@ -181,6 +182,10 @@ after <- nrow(data)
 ##
 dbh <- droplevels(dbh)
 data <- droplevels(data)
+## drop outliers
+##
+dbh <- subset(dbh, !(plot==158 & Tree.number==669))
+data <- subset(data, !(plot==137 & Tree.number==2175))
 
 ##
 ## observations
@@ -193,7 +198,7 @@ data <- droplevels(data)
 gi.years <- years[1:(length(years)-1)]
 gi <- data[,gi.years]
 site_gi <- as.numeric(as.factor(data$plot))
-tree_size_gi <- data$Tree.height
+tree_size_gi <- data$T1_BasalArea #data$Tree.height
 height_ratio_gi <- data$height.ratio
 radiation_gi <- data$total
 slope_gi <- data$Slope
@@ -209,7 +214,7 @@ tmn <- standardize(tmn)
 ## dbh data
 ##
 dbh_inc <- standardize(dbh$T2_BasalArea - dbh$T1_BasalArea)
-tree_size <- dbh$Tree.height
+tree_size <- dbh$T1_BasalArea #dbh$Tree.height
 height_ratio <- dbh$height.ratio
 site_dbh <- as.numeric(as.factor(dbh$plot))
 species <- as.numeric(dbh$Species)
@@ -353,7 +358,8 @@ fit <- stan(file=model.file,
             warmup=n.burnin,
             thin=n.thin,
             chains=n.chains,
-            cores=n.cores)
+            cores=n.cores,
+            adapt.delta=0.95)
 opt.old <- options(width=120)
 if (!debug) {
   sink("results-gi-plus-dbh.txt", append=TRUE, split=TRUE)
