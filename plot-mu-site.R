@@ -25,7 +25,7 @@ summarize <- function(x) {
   print(tmp, digits=3)
 }
 
-load("results-gi-plus-dbh-multi-correlated-with-size.Rsave")
+load("results-gi-plus-dbh-uncoupled.Rsave")
 mu.site <- extract(fit, pars=c("mu_site"))$mu_site
 n.sites <- ncol(mu.site)
 n.samps <- nrow(mu.site)

@@ -5,8 +5,8 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- FALSE
-coupled <- TRUE
+uncoupled <- TRUE
+coupled <- FALSE
 correlated <- FALSE
 multi_correlated <- FALSE
 multi_with_size <- FALSE
@@ -213,7 +213,7 @@ tmn <- standardize(tmn)
 
 ## dbh data
 ##
-dbh_inc <- standardize(dbh$T2_BasalArea - dbh$T1_BasalArea)
+dbh_inc <- standardize(dbh$DBH_inc)
 tree_size <- dbh$T1_BasalArea #dbh$Tree.height
 height_ratio <- dbh$height.ratio
 site_dbh <- as.numeric(as.factor(dbh$plot))

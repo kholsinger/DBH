@@ -3,9 +3,9 @@ evidence for preference is weak (especially in growth increment model)
 
 Growth Increment component
 elpd_diff        se
-    1.065     2.065
+    1.013     3.124
 
 
 DBH component
 elpd_diff        se
-    0.397     0.399
+    0.406     0.277
