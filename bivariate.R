@@ -19,7 +19,7 @@ clean <- function(x) {
 }
 
 ## load posterior estimates from Stan analysis
-results.file <- "results-gi-plus-dbh.Rsave"
+results.file <- "results-gi-plus-dbh-uncoupled.Rsave"
 load(file=results.file)
 beta.ppt <- extract(fit, pars=c("beta_ppt"))$beta_ppt
 beta.tmn <- extract(fit, pars=c("beta_tmn"))$beta_tmn
