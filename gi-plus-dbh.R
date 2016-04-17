@@ -152,10 +152,10 @@ initial.basal.area <- function(obs, gi, base) {
   pred <- numeric(n.trees)
   for (i in 1:n.trees) {
     dbh <- obs[i]
-    for (yr in base:(start.series+1)) {
+    for (yr in base[i]:(start.series+1)) {
       ## gi is radial growth increment
       ##
-      dbh <- dbh - 2.0*gi[i, as.character(base)]
+      dbh <- dbh - 2.0*gi[i, as.character(base[i])]
     }
     pred[i] <- to.basal.area(dbh)
   }
@@ -253,6 +253,7 @@ data <- subset(data, !(plot==137 & Tree.number==2175))
 ##
 ## exclude 2014 from gi data
 ##
+base_year <- dbh$T1year
 gi.years <- years[1:(length(years)-1)]
 gi.raw <- data[,gi.years]
 site_gi <- as.numeric(as.factor(data$plot))
