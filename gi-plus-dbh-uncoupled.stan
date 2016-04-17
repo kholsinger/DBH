@@ -8,7 +8,9 @@ data {
   matrix[n_years,n_months] ppt;
   matrix[n_years,n_months] tmn;
   matrix[n_indiv,n_years] gi;
+  matrix[n_indiv,n_years] current_size;
   int<lower=0> site_gi[n_indiv];
+  vector[n_indiv] height_ratio_gi;
   vector[n_indiv] radiation_gi;
   vector[n_indiv] slope_gi;
   vector[n_indiv] aspect_gi;
@@ -87,7 +89,8 @@ transformed parameters {
   //
   for (i in 1:n_indiv) {
     for (j in 1:n_years) {
-      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j];
+      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j]
+                            + beta_size_gi*current_size[i,j];
      }
   }
   // covariance matrix for Gaussian process
@@ -119,15 +122,11 @@ transformed parameters {
   // regression coefficients from dbh component to gi component
   //
   for (i in 1:n_indiv) {
-    alpha_indiv[i] <- beta_size_gi*tree_size[i]
-                      + beta_height_ratio_gi*height_ratio[i]
+    alpha_indiv[i] <- beta_height_ratio_gi*height_ratio_gi[i]
                       + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
                       + gamma_twi_gi*twi_gi[i];
-    // for comparison with separate model in growth-increment-with-site.stan
-    //
-    // alpha_indiv[i] <- 0;
   }
 }
 model {

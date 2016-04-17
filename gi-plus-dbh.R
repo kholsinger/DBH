@@ -5,14 +5,16 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- TRUE
-coupled <- FALSE
+uncoupled <- FALSE
+coupled <- TRUE
 correlated <- FALSE
 multi_correlated <- FALSE
 multi_with_size <- FALSE
 save <- TRUE
 
 save <- save & !debug
+
+base_year <- 2004
 
 if (multi_with_size) {
   model.file <- "gi-plus-dbh-multi-correlated-with-size.stan"
@@ -37,7 +39,7 @@ n.chains <- 4
 if (debug) {
   n.burnin <- 50
   n.iter <- 100
-  n.chains <- 2
+  n.chains <- 1
 }
 
 rstan_options(auto_write = TRUE)
@@ -140,6 +142,63 @@ calc.r2 <- function(fit, y, n.years, n.indiv, n.iter, verbose=FALSE) {
   return(list(r2=r2, lambda=lambda))
 }
 
+to.basal.area <- function(dbh) {
+  area <- pi*((dbh/2.0)^2)
+  return(area)
+}
+
+initial.basal.area <- function(obs, gi, base) {
+  n.trees <- nrow(gi)
+  pred <- numeric(n.trees)
+  for (i in 1:n.trees) {
+    dbh <- obs[i]
+    for (yr in base:(start.series+1)) {
+      ## gi is radial growth increment
+      ##
+      dbh <- dbh - 2.0*gi[i, as.character(base)]
+    }
+    pred[i] <- to.basal.area(dbh)
+  }
+  return(pred)
+}
+
+get.size.series <- function(obs, gi.raw, base, start, end) {
+  tree.size <- initial.basal.area(obs, gi.raw, base)
+  ## gi will contain growth *area* increments as calculated from
+  ## radial growth increments
+  ##
+  gi <- matrix(nrow=nrow(gi.raw), ncol=ncol(gi.raw))
+  colnames(gi) <- colnames(gi.raw)
+  current.size <- matrix(nrow=nrow(gi.raw), ncol=ncol(gi.raw))
+  colnames(current.size) <- colnames(gi.raw)
+  n.trees <- nrow(gi.raw)
+  for (i in 1:n.trees) {
+    old.size <- tree.size[i]
+    ## convert size (area) to radius
+    ##
+    current.radius <- sqrt(current.size[i, as.character(start+1)]/pi)
+    current.radius <- sqrt(old.size/pi)
+    for (yr in (start+1):end) {
+      current.radius <- current.radius + gi.raw[i, as.character(yr)]
+      ## to.basal.area takes diameter as argument, not radius
+      ##
+      new.size <- to.basal.area(2.0*current.radius)
+      gi[i, as.character(yr)] <- new.size - old.size
+      current.size[i, as.character(yr)] <- new.size
+      old.size <- new.size
+    }
+  }
+  return(list(gi=gi,
+              current.size=current.size))
+}
+
+basal.area.inc <- function(dbh.1, dbh.2) {
+  initial <- to.basal.area(dbh.1)
+  final <- to.basal.area(dbh.2)
+  inc <- final - initial
+  return(inc)
+}
+
 source("prepare-data.R")
 source("dbh-process-data.R")
 
@@ -158,7 +217,6 @@ data <- subset(data, id!="1560562a")
 ## and the dbh data
 ##
 dbh$Tree.height <- standardize(dbh$Tree.height)
-dbh$T1_BasalArea <- standardize(dbh$T1_BasalArea)
 dbh$height.ratio <- standardize(dbh$height.ratio)
 dbh$total <- standardize(dbh$radiation)
 dbh$Slope <- standardize(dbh$Slope)
@@ -196,9 +254,12 @@ data <- subset(data, !(plot==137 & Tree.number==2175))
 ## exclude 2014 from gi data
 ##
 gi.years <- years[1:(length(years)-1)]
-gi <- data[,gi.years]
+gi.raw <- data[,gi.years]
 site_gi <- as.numeric(as.factor(data$plot))
-tree_size_gi <- data$T1_BasalArea #data$Tree.height
+size.series <- get.size.series(data$T1_DBH, gi.raw, base_year,
+                               start.series, end.series)
+gi <- standardize(size.series$gi)
+current_size <- standardize(size.series$current.size)
 height_ratio_gi <- data$height.ratio
 radiation_gi <- data$total
 slope_gi <- data$Slope
@@ -213,8 +274,8 @@ tmn <- standardize(tmn)
 
 ## dbh data
 ##
-dbh_inc <- standardize(dbh$DBH_inc)
-tree_size <- dbh$T1_BasalArea #dbh$Tree.height
+dbh_inc <- standardize(basal.area.inc(dbh$T1_DBH, dbh$T2_DBH))
+tree_size <- standardize(dbh$T1_BasalArea)
 height_ratio <- dbh$height.ratio
 site_dbh <- as.numeric(as.factor(dbh$plot))
 species <- as.numeric(dbh$Species)
@@ -228,7 +289,9 @@ n_species <- length(unique(dbh$Species))
 stopifnot(n_species == max(species))
 
 stan.data <- list(gi=gi,
+                  current_size=current_size,
                   site_gi=site_gi,
+                  height_ratio_gi=height_ratio_gi,
                   radiation_gi=radiation_gi,
                   slope_gi=slope_gi,
                   aspect_gi=aspect_gi,
@@ -359,7 +422,8 @@ fit <- stan(file=model.file,
             thin=n.thin,
             chains=n.chains,
             cores=n.cores,
-            adapt.delta=0.95)
+            control=list(adapt_delta=0.95,
+                         max_treedepth=20))
 opt.old <- options(width=120)
 if (!debug) {
   sink("results-gi-plus-dbh.txt", append=TRUE, split=TRUE)

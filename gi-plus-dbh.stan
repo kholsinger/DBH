@@ -8,7 +8,9 @@ data {
   matrix[n_years,n_months] ppt;
   matrix[n_years,n_months] tmn;
   matrix[n_indiv,n_years] gi;
+  matrix[n_indiv,n_years] current_size;
   int<lower=0> site_gi[n_indiv];
+  vector[n_indiv] height_ratio_gi;
   vector[n_indiv] radiation_gi;
   vector[n_indiv] slope_gi;
   vector[n_indiv] aspect_gi;
@@ -33,6 +35,8 @@ parameters {
   // for growth increment component
   //
   real beta_0_gi;
+  real beta_size_gi;
+  real beta_height_ratio_gi;
   vector[n_months] beta_ppt;
   vector[n_months] beta_tmn;
   vector[n_indiv] mu_indiv;
@@ -76,8 +80,6 @@ transformed parameters {
   vector[n_obs] alpha_indiv;
   // for shared component of the model, scaled by alpha from dbh component
   //
-  real beta_size_gi;
-  real beta_height_ratio_gi;
   real gamma_radiation_gi;
   real gamma_slope_gi;
   real gamma_aspect_gi;
@@ -94,7 +96,8 @@ transformed parameters {
   //
   for (i in 1:n_indiv) {
     for (j in 1:n_years) {
-      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j];
+      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j]
+                            + beta_size_gi*current_size[i,j];
      }
   }
   // covariance matrix for Gaussian process
@@ -125,15 +128,12 @@ transformed parameters {
   // shared component at individual level, alpha scales
   // regression coefficients from dbh component to gi component
   //
-  beta_size_gi <- alpha*beta_size;
-  beta_height_ratio_gi <- alpha*beta_height_ratio;
   gamma_radiation_gi <- alpha*gamma_radiation_dbh;
   gamma_slope_gi <- alpha*gamma_slope_dbh;
   gamma_aspect_gi <- alpha*gamma_aspect_dbh;
   gamma_twi_gi <- alpha*gamma_twi_dbh;
   for (i in 1:n_indiv) {
-    alpha_indiv[i] <- beta_size_gi*tree_size[i]
-                      + beta_height_ratio_gi*height_ratio[i]
+    alpha_indiv[i] <- beta_height_ratio_gi*height_ratio_gi[i]
                       + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
@@ -144,6 +144,8 @@ model {
   // priors for growth increment component
   //
   beta_0_gi ~ normal(0.0, 1.0);
+  beta_size_gi ~ normal(0.0, 1.0);
+  beta_height_ratio_gi ~ normal(0.0, 1.0);
   beta_ppt ~ normal(0.0, 1.0);
   beta_tmn ~ normal(0.0, 1.0);
   sigma_indiv ~ normal(0.0, 1.0);
@@ -173,7 +175,7 @@ model {
   // likelihood for growth increment component
   //
   for (i in 1:n_indiv) {
-    mu_indiv[i] ~ normal(mu_site[site_gi[i]] + alpha_indiv[i], sigma_indiv);
+    mu_indiv[i] ~ normal(mu_site[site_gi[i]]+alpha_indiv[i], sigma_indiv);
   }
   for (i in 1:n_sites_gi) {
     mu_site[i] ~ normal(beta_0_gi, sigma_site_gi);
