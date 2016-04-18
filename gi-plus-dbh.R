@@ -5,8 +5,8 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- FALSE
-coupled <- TRUE
+uncoupled <- TRUE
+coupled <- FALSE
 correlated <- FALSE
 multi_correlated <- FALSE
 multi_with_size <- FALSE
@@ -202,16 +202,16 @@ basal.area.inc <- function(dbh.1, dbh.2) {
 source("prepare-data.R")
 source("dbh-process-data.R")
 
-## exclude plot 154 for the time being
-##
-dbh <- subset(dbh, plot!="154")
-data <- subset(data, site!="154.rwl")
+## ## exclude plot 154 for the time being
+## ##
+## dbh <- subset(dbh, plot!="154")
+## data <- subset(data, site!="154.rwl")
 
-## exclude single outlier in dbh data
-dbh <- subset(dbh, Tree.number!="691")
+## ## exclude single outlier in dbh data
+## dbh <- subset(dbh, Tree.number!="691")
 
-## exclude single outlier in gi data
-data <- subset(data, id!="1560562a")
+## ## exclude single outlier in gi data
+## data <- subset(data, id!="1560562a")
 
 ## standardize now so that these covariates match between the gi data
 ## and the dbh data
@@ -240,10 +240,10 @@ after <- nrow(data)
 ##
 dbh <- droplevels(dbh)
 data <- droplevels(data)
-## drop outliers
-##
-dbh <- subset(dbh, !(plot==158 & Tree.number==669))
-data <- subset(data, !(plot==137 & Tree.number==2175))
+## ## drop outliers
+## ##
+## dbh <- subset(dbh, !(plot==158 & Tree.number==669))
+## data <- subset(data, !(plot==137 & Tree.number==2175))
 
 ##
 ## observations
@@ -320,6 +320,7 @@ stan.pars <- c("beta_0_gi",
                "mu_year",
                "mu_indiv",
                "mu_site",
+               "mu_year_indiv",
                "sigma_indiv",
                "sigma_site_gi",
                "eta_sq",

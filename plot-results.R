@@ -6,11 +6,7 @@ rm(list=ls())
 check.residuals <- TRUE
 JAGS <- FALSE
 
-if (JAGS) {
-  results.file <- "results.Rsave"
-} else {
-  results.file <- "results-stan.Rsave"
-}
+results.file <- "results-gi-plus-dbh-uncoupled.Rsave"
 load(file=results.file)
 
 ## coefficient plots
@@ -22,8 +18,8 @@ if (JAGS) {
   beta.tmn <- fit$BUGSoutput$sims.list$beta.tmn
 } else {
   library(rstan)
-  pars <- extract(fit, pars=c("beta_0", "beta_ppt", "beta_tmn"))
-  beta.0 <- pars$beta_0
+  pars <- extract(fit, pars=c("beta_0_gi", "beta_ppt", "beta_tmn"))
+  beta.0 <- pars$beta_0_gi
   beta.ppt <- pars$beta_ppt
   beta.tmn <- pars$beta_tmn
 }
@@ -54,7 +50,8 @@ for.plot$month <- factor(for.plot$month, levels=months)
 
 p <- ggplot(for.plot, aes(x=month, y=values)) +
      geom_hline(yintercept=0, linetype="dashed") +
-     geom_boxplot() +
+     geom_violin(fill="blue", alpha=0.2) +
+     geom_boxplot(width=0.1, fill="dark blue", outlier.colour=NA) +
      facet_grid(par ~ .)
 print(p)
 
@@ -77,7 +74,8 @@ for (i in 1:n.yrs) {
 for.plot <- data.frame(Year=as.factor(year), Predicted=value)
 
 p <- ggplot(for.plot, aes(x=Year, y=Predicted)) +
-     geom_boxplot()
+     geom_violin(fill="blue", alpha=0.2) +
+     geom_boxplot(width=0.1, fill="dark blue", outlier.colour=NA)
 print(p)
 
 ## variation across individuals
@@ -103,7 +101,8 @@ for.plot <- data.frame(Site=as.factor(site.id),
                        Predicted=value)
 
 p <- ggplot(for.plot, aes(x=Individual, y=Predicted)) +
-     geom_boxplot() +
+     geom_violin(fill="blue", alpha=0.2) +
+     geom_boxplot(width=0.1, fill="dark blue", outlier.colour=NA) +
      facet_wrap(~ Site, scales="free_x")
 print(p)
 
@@ -126,7 +125,8 @@ for (i in 2:n.sites) {
 for.plot <- data.frame(Site=as.factor(site), Predicted=value)
 
 p <- ggplot(for.plot, aes(x=Site, y=Predicted)) +
-     geom_boxplot()
+     geom_violin(fill="blue", alpha=0.2) +
+     geom_boxplot(width=0.1, fill="dark blue", outlier.colour=NA)
 print(p)
 
 

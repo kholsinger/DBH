@@ -195,6 +195,7 @@ model {
 generated quantities {
   vector[n_indiv] log_lik_gi;
   vector[n_obs] log_lik_dbh;
+  vector[n_obs] dbh_tilde;
 
   // calculate log likelihoods
   //
@@ -205,5 +206,10 @@ generated quantities {
   }
   for (i in 1:n_obs) {
     log_lik_dbh[i] <- normal_log(dbh_inc[i], mu_dbh_inc[i], sigma_resid);
+  }
+
+  // posterior predictions for dbh only (for now)
+  for (i in 1:n_obs) {
+    dbh_tilde[i] <- normal_rng(mu_dbh_inc[i], sigma_resid);
   }
 }
