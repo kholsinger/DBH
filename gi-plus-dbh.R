@@ -10,9 +10,11 @@ coupled <- FALSE
 correlated <- FALSE
 multi_correlated <- FALSE
 multi_with_size <- FALSE
-save <- TRUE
+write.results.file <- FALSE
+save <- FALSE
 
 save <- save & !debug
+write.results.file <- write.results.file & debug
 
 base_year <- 2004
 
@@ -155,11 +157,29 @@ initial.basal.area <- function(obs, gi, base) {
     for (yr in base[i]:(start.series+1)) {
       ## gi is radial growth increment
       ##
-      dbh <- dbh - 2.0*gi[i, as.character(base[i])]
+      dbh <- dbh - 2.0*gi[i, as.character(yr)]
     }
     pred[i] <- to.basal.area(dbh)
   }
   return(pred)
+}
+
+check.initial.basal.area <- function(obs, gi, base) {
+  n.trees <- nrow(gi)
+  pred <- numeric(n.trees)
+  pred.dbh <- numeric(n.trees)
+  for (i in 1:n.trees) {
+    dbh <- obs[i]
+    for (yr in base[i]:(start.series+1)) {
+      ## gi is radial growth increment
+      ##
+      dbh <- dbh - 2.0*gi[i, as.character(yr)]
+    }
+    pred[i] <- to.basal.area(dbh)
+    pred.dbh[i] <- dbh
+  }
+  return(data.frame(pred=pred,
+                    pred.dbh=pred.dbh))
 }
 
 get.size.series <- function(obs, gi.raw, base, start, end) {
@@ -176,7 +196,6 @@ get.size.series <- function(obs, gi.raw, base, start, end) {
     old.size <- tree.size[i]
     ## convert size (area) to radius
     ##
-    current.radius <- sqrt(current.size[i, as.character(start+1)]/pi)
     current.radius <- sqrt(old.size/pi)
     for (yr in (start+1):end) {
       current.radius <- current.radius + gi.raw[i, as.character(yr)]
@@ -187,6 +206,11 @@ get.size.series <- function(obs, gi.raw, base, start, end) {
       current.size[i, as.character(yr)] <- new.size
       old.size <- new.size
     }
+    cat(i, " ", as.character(base[i]), ": ")
+    cat(current.size[i, as.character(base[i])], " ")
+    cat(to.basal.area(obs[i]), "\n")
+    stopifnot(abs(current.size[i, as.character(base[i])]
+                  - to.basal.area(obs[i])) < 1.0e-10)
   }
   return(list(gi=gi,
               current.size=current.size))
@@ -427,7 +451,7 @@ fit <- stan(file=model.file,
             control=list(adapt_delta=0.95,
                          max_treedepth=20))
 opt.old <- options(width=120)
-if (!debug) {
+if (write.results.file) {
   sink("results-gi-plus-dbh.txt", append=TRUE, split=TRUE)
 }
 cat("\n\n************************************************************\n",
@@ -539,7 +563,7 @@ if (0) {
       "R^2:    ", round(r2$r2, 3), "\n",
       "lambda: ", round(r2$lambda, 3), sep="")
 }
- if (!debug) {
+if (write.results.file) {
   sink()
 }
 options(opt.old)

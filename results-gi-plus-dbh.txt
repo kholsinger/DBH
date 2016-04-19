@@ -3398,7 +3398,7 @@ With Gaussian process model for individuals
 because of missing covariate data (plot, radiation, slope,
 aspect, twi)
 Inference for Stan model: gi-plus-dbh-uncoupled.
-4 chains, each with iter=2500; warmup=1250; thin=1; 
+4 chains, each with iter=2500; warmup=1250; thin=1;
 post-warmup draws per chain=1250, total post-warmup draws=5000.
 
                        mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
@@ -3466,7 +3466,7 @@ beta_height_ratio_gi -0.043   0.001 0.038 -0.120 -0.069 -0.043 -0.014  0.029  50
 
 Samples were drawn using NUTS(diag_e) at Sat Apr 16 21:31:19 2016.
 For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at 
+and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).
 
 
@@ -3479,7 +3479,7 @@ With Gaussian process model for individuals
 because of missing covariate data (plot, radiation, slope,
 aspect, twi)
 Inference for Stan model: gi-plus-dbh.
-4 chains, each with iter=2500; warmup=1250; thin=1; 
+4 chains, each with iter=2500; warmup=1250; thin=1;
 post-warmup draws per chain=1250, total post-warmup draws=5000.
 
                        mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
@@ -3548,7 +3548,7 @@ beta_height_ratio_gi -0.051   0.001 0.037 -0.123 -0.076 -0.051 -0.026  0.022  50
 
 Samples were drawn using NUTS(diag_e) at Sat Apr 16 23:36:20 2016.
 For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at 
+and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).
 
 
@@ -3561,7 +3561,7 @@ With Gaussian process model for individuals
 because of missing covariate data (plot, radiation, slope,
 aspect, twi)
 Inference for Stan model: gi-plus-dbh-uncoupled.
-4 chains, each with iter=2500; warmup=1250; thin=1; 
+4 chains, each with iter=2500; warmup=1250; thin=1;
 post-warmup draws per chain=1250, total post-warmup draws=5000.
 
                        mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
@@ -3630,7 +3630,7 @@ beta_height_ratio_gi -0.036   0.000 0.032 -0.099 -0.056 -0.036 -0.015  0.028  50
 
 Samples were drawn using NUTS(diag_e) at Sun Apr 17 13:12:25 2016.
 For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at 
+and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).
 
 
@@ -3643,7 +3643,7 @@ With Gaussian process model for individuals
 because of missing covariate data (plot, radiation, slope,
 aspect, twi)
 Inference for Stan model: gi-plus-dbh-uncoupled.
-4 chains, each with iter=2500; warmup=1250; thin=1; 
+4 chains, each with iter=2500; warmup=1250; thin=1;
 post-warmup draws per chain=1250, total post-warmup draws=5000.
 
                        mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
@@ -3712,7 +3712,7 @@ beta_height_ratio_gi -0.037   0.000 0.031 -0.095 -0.057 -0.036 -0.016  0.026  50
 
 Samples were drawn using NUTS(diag_e) at Sun Apr 17 15:30:37 2016.
 For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at 
+and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).
 
 
@@ -3725,7 +3725,7 @@ With Gaussian process model for individuals
 because of missing covariate data (plot, radiation, slope,
 aspect, twi)
 Inference for Stan model: gi-plus-dbh-uncoupled.
-4 chains, each with iter=2500; warmup=1250; thin=1; 
+4 chains, each with iter=2500; warmup=1250; thin=1;
 post-warmup draws per chain=1250, total post-warmup draws=5000.
 
                        mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
@@ -3794,5 +3794,6 @@ beta_height_ratio_gi -0.036   0.000 0.032 -0.098 -0.057 -0.035 -0.014  0.025  50
 
 Samples were drawn using NUTS(diag_e) at Sun Apr 17 18:13:46 2016.
 For each parameter, n_eff is a crude measure of effective sample size,
-and Rhat is the potential scale reduction factor on split chains (at 
+and Rhat is the potential scale reduction factor on split chains (at
 convergence, Rhat=1).
+
