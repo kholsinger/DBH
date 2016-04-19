@@ -178,8 +178,8 @@ check.initial.basal.area <- function(obs, gi, base) {
     pred[i] <- to.basal.area(dbh)
     pred.dbh[i] <- dbh
   }
-  return(data.frame(pred=pred,
-                    pred.dbh=pred.dbh))
+  return(data.frame(initial=pred,
+                    initial.dbh=pred.dbh))
 }
 
 get.size.series <- function(obs, gi.raw, base, start, end) {
