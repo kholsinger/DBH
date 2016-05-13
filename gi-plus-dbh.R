@@ -16,7 +16,7 @@ save <- FALSE
 save <- save & !debug
 write.results.file <- write.results.file & debug
 
-base_year <- 2004
+base_year <- 2004 # note that base_year is also defined on line 280
 
 if (multi_with_size) {
   model.file <- "gi-plus-dbh-multi-correlated-with-size.stan"
@@ -149,12 +149,14 @@ to.basal.area <- function(dbh) {
   return(area)
 }
 
-initial.basal.area <- function(obs, gi, base) {
+initial.basal.area <- function(obs, gi, base) {## obs is DBH_T1, gi.raw are ring widths, base is the T1 year
+  ## calculating BA backwards from year T1 (2004) to start.series+1 (1982)
+  ## initial basal area thus refers to 1982 basal area
   n.trees <- nrow(gi)
   pred <- numeric(n.trees)
   for (i in 1:n.trees) {
-    dbh <- obs[i]
-    for (yr in base[i]:(start.series+1)) {
+    dbh <- obs[i] ## each tree's T1_DBH
+    for (yr in base[i]:(start.series+1)) {## from each tree's T1 year (2004) to 1981+1
       ## gi is radial growth increment
       ##
       dbh <- dbh - 2.0*gi[i, as.character(yr)]
@@ -164,7 +166,7 @@ initial.basal.area <- function(obs, gi, base) {
   return(pred)
 }
 
-check.initial.basal.area <- function(obs, gi, base) {
+check.initial.basal.area <- function(obs, gi, base) { 
   n.trees <- nrow(gi)
   pred <- numeric(n.trees)
   pred.dbh <- numeric(n.trees)
@@ -196,7 +198,7 @@ get.size.series <- function(obs, gi.raw, base, start, end) {
     old.size <- tree.size[i]
     ## convert size (area) to radius
     ##
-    current.radius <- sqrt(old.size/pi)
+    current.radius <- sqrt(old.size/pi) ## this is T1 radius
     for (yr in (start+1):end) {
       current.radius <- current.radius + gi.raw[i, as.character(yr)]
       ## to.basal.area takes diameter as argument, not radius
@@ -228,8 +230,8 @@ source("dbh-process-data.R")
 
 ## ## exclude plot 154 for the time being
 ## ##
-## dbh <- subset(dbh, plot!="154")
-## data <- subset(data, site!="154.rwl")
+dbh <- subset(dbh, plot!="154")
+data <- subset(data, site!="154.rwl")
 
 ## ## exclude single outlier in dbh data
 ## dbh <- subset(dbh, Tree.number!="691")
