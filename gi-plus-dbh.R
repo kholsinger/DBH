@@ -151,7 +151,7 @@ to.basal.area <- function(dbh) {
 
 initial.basal.area <- function(obs, gi, base) {## obs is DBH_T1, gi.raw are ring widths, base is the T1 year
   ## calculating BA backwards from year T1 (2004) to start.series+1 (1982)
-  ## initial basal area thus refers to 1982 basal area
+  ## initial basal area thus refers to 1981 basal area
   n.trees <- nrow(gi)
   pred <- numeric(n.trees)
   for (i in 1:n.trees) {
@@ -185,27 +185,27 @@ check.initial.basal.area <- function(obs, gi, base) {
 }
 
 get.size.series <- function(obs, gi.raw, base, start, end) {
-  tree.size <- initial.basal.area(obs, gi.raw, base)
+  tree.size <- initial.basal.area(obs, gi.raw, base) ## basal area of each tree in 1981
   ## gi will contain growth *area* increments as calculated from
   ## radial growth increments
   ##
   gi <- matrix(nrow=nrow(gi.raw), ncol=ncol(gi.raw))
   colnames(gi) <- colnames(gi.raw)
-  current.size <- matrix(nrow=nrow(gi.raw), ncol=ncol(gi.raw))
+  current.size <- matrix(nrow=nrow(gi.raw), ncol=ncol(gi.raw)) ## basal area of each tree in each year
   colnames(current.size) <- colnames(gi.raw)
   n.trees <- nrow(gi.raw)
   for (i in 1:n.trees) {
-    old.size <- tree.size[i]
+    old.size <- tree.size[i] ## basal area in 1981
     ## convert size (area) to radius
     ##
-    current.radius <- sqrt(old.size/pi) ## this is T1 radius
-    for (yr in (start+1):end) {
+    current.radius <- sqrt(old.size/pi) ## this is 1981 radius
+    for (yr in (start+1):end) { ## from 1982 to 2013
       current.radius <- current.radius + gi.raw[i, as.character(yr)]
       ## to.basal.area takes diameter as argument, not radius
       ##
       new.size <- to.basal.area(2.0*current.radius)
-      gi[i, as.character(yr)] <- new.size - old.size
-      current.size[i, as.character(yr)] <- new.size
+      gi[i, as.character(yr)] <- new.size - old.size ## basal area increment calculation
+      current.size[i, as.character(yr)] <- new.size ## basal area for each tree, each year
       old.size <- new.size
     }
     cat(i, " ", as.character(base[i]), ": ")
