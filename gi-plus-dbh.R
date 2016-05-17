@@ -159,7 +159,7 @@ initial.basal.area <- function(obs, gi, base) {## obs is DBH_T1, gi.raw are ring
     for (yr in base[i]:(start.series+1)) {## from each tree's T1 year (2004) to 1981+1
       ## gi is radial growth increment
       ##
-      dbh <- dbh - 2.0*gi[i, as.character(yr)]
+      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.0001
     }
     pred[i] <- to.basal.area(dbh)
   }
@@ -175,7 +175,7 @@ check.initial.basal.area <- function(obs, gi, base) {
     for (yr in base[i]:(start.series+1)) {
       ## gi is radial growth increment
       ##
-      dbh <- dbh - 2.0*gi[i, as.character(yr)]
+      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.0001
     }
     pred[i] <- to.basal.area(dbh)
     pred.dbh[i] <- dbh
@@ -200,7 +200,7 @@ get.size.series <- function(obs, gi.raw, base, start, end) {
     ##
     current.radius <- sqrt(old.size/pi) ## this is 1981 radius
     for (yr in (start+1):end) { ## from 1982 to 2013
-      current.radius <- current.radius + gi.raw[i, as.character(yr)]
+      current.radius <- current.radius + gi.raw[i, as.character(yr)]*0.0001
       ## to.basal.area takes diameter as argument, not radius
       ##
       new.size <- to.basal.area(2.0*current.radius)
@@ -301,7 +301,7 @@ tmn <- standardize(tmn)
 
 ## dbh data
 ##
-dbh_inc <- standardize(basal.area.inc(dbh$T1_DBH, dbh$T2_DBH))
+dbh_inc <- standardize(basal.area.inc(dbh$T1_DBH, dbh$T2_DBH)) ## standardized basal area increment from 2 DBH measurements
 tree_size <- standardize(dbh$T1_BasalArea)
 height_ratio <- dbh$height.ratio
 site_dbh <- as.numeric(as.factor(dbh$plot))
