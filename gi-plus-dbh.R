@@ -330,7 +330,7 @@ stan.data <- list(gi=gi,
                   n_sites_gi=n_sites_gi,
                   n_months=n.months,
                   dbh_inc=dbh_inc,
-                  tree_size-tree_size,
+                  tree_size=tree_size,## typo!
                   height_ratio=height_ratio,
                   slope=slope,
                   aspect=aspect,
