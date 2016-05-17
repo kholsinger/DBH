@@ -149,7 +149,7 @@ to.basal.area <- function(dbh) {
   return(area)
 }
 
-initial.basal.area <- function(obs, gi, base) {## obs is DBH_T1, gi.raw are ring widths, base is the T1 year
+initial.basal.area <- function(obs, gi, base) {## obs is T1_DBH, gi.raw are ring widths, base is the T1 year
   ## calculating BA backwards from year T1 (2004) to start.series+1 (1982)
   ## initial basal area thus refers to 1981 basal area
   n.trees <- nrow(gi)
@@ -159,14 +159,14 @@ initial.basal.area <- function(obs, gi, base) {## obs is DBH_T1, gi.raw are ring
     for (yr in base[i]:(start.series+1)) {## from each tree's T1 year (2004) to 1981+1
       ## gi is radial growth increment
       ##
-      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.0001
+      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.1
     }
     pred[i] <- to.basal.area(dbh)
   }
   return(pred)
 }
 
-check.initial.basal.area <- function(obs, gi, base) { 
+check.initial.basal.area <- function(obs, gi, base) {
   n.trees <- nrow(gi)
   pred <- numeric(n.trees)
   pred.dbh <- numeric(n.trees)
@@ -175,7 +175,7 @@ check.initial.basal.area <- function(obs, gi, base) {
     for (yr in base[i]:(start.series+1)) {
       ## gi is radial growth increment
       ##
-      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.0001
+      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.1
     }
     pred[i] <- to.basal.area(dbh)
     pred.dbh[i] <- dbh
@@ -200,7 +200,7 @@ get.size.series <- function(obs, gi.raw, base, start, end) {
     ##
     current.radius <- sqrt(old.size/pi) ## this is 1981 radius
     for (yr in (start+1):end) { ## from 1982 to 2013
-      current.radius <- current.radius + gi.raw[i, as.character(yr)]*0.0001
+      current.radius <- current.radius + gi.raw[i, as.character(yr)]*0.1
       ## to.basal.area takes diameter as argument, not radius
       ##
       new.size <- to.basal.area(2.0*current.radius)
