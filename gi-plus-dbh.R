@@ -5,26 +5,13 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- TRUE
-coupled <- FALSE
-correlated <- FALSE
-multi_correlated <- FALSE
-multi_with_size <- FALSE
-write.results.file <- FALSE
-save <- FALSE
+uncoupled <- FALSE
+coupled <- TRUE
+save <- TRUE
 
 save <- save & !debug
-write.results.file <- write.results.file & debug
 
-base_year <- 2004 # note that base_year is also defined on line 280
-
-if (multi_with_size) {
-  model.file <- "gi-plus-dbh-multi-correlated-with-size.stan"
-} else if (multi_correlated) {
-  model.file <- "gi-plus-dbh-multi-correlated.stan"
-} else if (correlated) {
-  model.file <- "gi-plus-dbh-correlated.stan"
-} else if (coupled) {
+if (coupled) {
   model.file <- "gi-plus-dbh.stan"
 } else if (uncoupled) {
   model.file <- "gi-plus-dbh-uncoupled.stan"
@@ -41,7 +28,7 @@ n.chains <- 4
 if (debug) {
   n.burnin <- 50
   n.iter <- 100
-  n.chains <- 1
+  n.chains <- 2
 }
 
 rstan_options(auto_write = TRUE)
@@ -144,105 +131,25 @@ calc.r2 <- function(fit, y, n.years, n.indiv, n.iter, verbose=FALSE) {
   return(list(r2=r2, lambda=lambda))
 }
 
-to.basal.area <- function(dbh) {
-  area <- pi*((dbh/2.0)^2)
-  return(area)
-}
-
-initial.basal.area <- function(obs, gi, base) {## obs is T1_DBH, gi.raw are ring widths, base is the T1 year
-  ## calculating BA backwards from year T1 (2004) to start.series+1 (1982)
-  ## initial basal area thus refers to 1981 basal area
-  n.trees <- nrow(gi)
-  pred <- numeric(n.trees)
-  for (i in 1:n.trees) {
-    dbh <- obs[i] ## each tree's T1_DBH
-    for (yr in base[i]:(start.series+1)) {## from each tree's T1 year (2004) to 1981+1
-      ## gi is radial growth increment
-      ##
-      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.1
-    }
-    pred[i] <- to.basal.area(dbh)
-  }
-  return(pred)
-}
-
-check.initial.basal.area <- function(obs, gi, base) {
-  n.trees <- nrow(gi)
-  pred <- numeric(n.trees)
-  pred.dbh <- numeric(n.trees)
-  for (i in 1:n.trees) {
-    dbh <- obs[i]
-    for (yr in base[i]:(start.series+1)) {
-      ## gi is radial growth increment
-      ##
-      dbh <- dbh - 2.0*gi[i, as.character(yr)]*0.1
-    }
-    pred[i] <- to.basal.area(dbh)
-    pred.dbh[i] <- dbh
-  }
-  return(data.frame(initial=pred,
-                    initial.dbh=pred.dbh))
-}
-
-get.size.series <- function(obs, gi.raw, base, start, end) {
-  tree.size <- initial.basal.area(obs, gi.raw, base) ## basal area of each tree in 1981
-  ## gi will contain growth *area* increments as calculated from
-  ## radial growth increments
-  ##
-  gi <- matrix(nrow=nrow(gi.raw), ncol=ncol(gi.raw))
-  colnames(gi) <- colnames(gi.raw)
-  current.size <- matrix(nrow=nrow(gi.raw), ncol=ncol(gi.raw)) ## basal area of each tree in each year
-  colnames(current.size) <- colnames(gi.raw)
-  n.trees <- nrow(gi.raw)
-  for (i in 1:n.trees) {
-    old.size <- tree.size[i] ## basal area in 1981
-    ## convert size (area) to radius
-    ##
-    current.radius <- sqrt(old.size/pi) ## this is 1981 radius
-    for (yr in (start+1):end) { ## from 1982 to 2013
-      current.radius <- current.radius + gi.raw[i, as.character(yr)]*0.1
-      ## to.basal.area takes diameter as argument, not radius
-      ##
-      new.size <- to.basal.area(2.0*current.radius)
-      gi[i, as.character(yr)] <- new.size - old.size ## basal area increment calculation
-      current.size[i, as.character(yr)] <- new.size ## basal area for each tree, each year
-      old.size <- new.size
-    }
-    cat(i, " ", as.character(base[i]), ": ")
-    cat(current.size[i, as.character(base[i])], " ")
-    cat(to.basal.area(obs[i]), "\n")
-    stopifnot(abs(current.size[i, as.character(base[i])]
-                  - to.basal.area(obs[i])) < 1.0e-10)
-  }
-  return(list(gi=gi,
-              current.size=current.size))
-}
-
-basal.area.inc <- function(dbh.1, dbh.2) {
-  initial <- to.basal.area(dbh.1)
-  final <- to.basal.area(dbh.2)
-  inc <- final - initial
-  return(inc)
-}
-
 source("prepare-data.R")
 source("dbh-process-data.R")
 
-## ## exclude plot 154 for the time being
-## ##
+## exclude plot 154 for the time being
+##
 dbh <- subset(dbh, plot!="154")
 data <- subset(data, site!="154.rwl")
 
-## ## exclude single outlier in dbh data
-## dbh <- subset(dbh, Tree.number!="691")
+## exclude single outlier in dbh data
+dbh <- subset(dbh, Tree.number!="691")
 
-## ## exclude single outlier in gi data
-## data <- subset(data, id!="1560562a")
+## exclude single outlier in gi data
+data <- subset(data, id!="1560562a")
 
 ## standardize now so that these covariates match between the gi data
 ## and the dbh data
 ##
 dbh$Tree.height <- standardize(dbh$Tree.height)
+dbh$T1_BasalArea <- standardize(dbh$T1_BasalArea)
 dbh$height.ratio <- standardize(dbh$height.ratio)
 dbh$total <- standardize(dbh$radiation)
 dbh$Slope <- standardize(dbh$Slope)
@@ -266,10 +173,10 @@ after <- nrow(data)
 ##
 dbh <- droplevels(dbh)
 data <- droplevels(data)
-## ## drop outliers
-## ##
-## dbh <- subset(dbh, !(plot==158 & Tree.number==669))
-## data <- subset(data, !(plot==137 & Tree.number==2175))
+## drop outliers
+##
+dbh <- subset(dbh, !(plot==158 & Tree.number==669))
+data <- subset(data, !(plot==137 & Tree.number==2175))
 
 ##
 ## observations
@@ -279,14 +186,10 @@ data <- droplevels(data)
 ##
 ## exclude 2014 from gi data
 ##
-base_year <- dbh$T1year
 gi.years <- years[1:(length(years)-1)]
-gi.raw <- data[,gi.years]
+gi <- data[,gi.years]
 site_gi <- as.numeric(as.factor(data$plot))
-size.series <- get.size.series(data$T1_DBH, gi.raw, base_year,
-                               start.series, end.series)
-gi <- standardize(size.series$gi)
-current_size <- standardize(size.series$current.size)
+tree_size_gi <- data$T1_BasalArea
 height_ratio_gi <- data$height.ratio
 radiation_gi <- data$total
 slope_gi <- data$Slope
@@ -301,8 +204,8 @@ tmn <- standardize(tmn)
 
 ## dbh data
 ##
-dbh_inc <- standardize(basal.area.inc(dbh$T1_DBH, dbh$T2_DBH)) ## standardized basal area increment from 2 DBH measurements
-tree_size <- standardize(dbh$T1_BasalArea)
+dbh_inc <- standardize(dbh$DBH_inc)
+tree_size <- dbh$T1_BasalArea
 height_ratio <- dbh$height.ratio
 site_dbh <- as.numeric(as.factor(dbh$plot))
 species <- as.numeric(dbh$Species)
@@ -316,8 +219,8 @@ n_species <- length(unique(dbh$Species))
 stopifnot(n_species == max(species))
 
 stan.data <- list(gi=gi,
-                  current_size=current_size,
                   site_gi=site_gi,
+                  tree_size_gi=tree_size_gi,
                   height_ratio_gi=height_ratio_gi,
                   radiation_gi=radiation_gi,
                   slope_gi=slope_gi,
@@ -330,7 +233,7 @@ stan.data <- list(gi=gi,
                   n_sites_gi=n_sites_gi,
                   n_months=n.months,
                   dbh_inc=dbh_inc,
-                  tree_size=tree_size,## typo!
+                  tree_size-tree_size,
                   height_ratio=height_ratio,
                   slope=slope,
                   aspect=aspect,
@@ -346,7 +249,6 @@ stan.pars <- c("beta_0_gi",
                "mu_year",
                "mu_indiv",
                "mu_site",
-               "mu_year_indiv",
                "sigma_indiv",
                "sigma_site_gi",
                "eta_sq",
@@ -368,14 +270,7 @@ stan.pars <- c("beta_0_gi",
                "sigma_species",
                "log_lik_gi",
                "log_lik_dbh")
-if (multi_correlated) {
-  stan.pars <- c(stan.pars, "omega")
-} else if (correlated) {
-  stan.pars <- c(stan.pars, "omega_radiation",
-                 "omega_slope",
-                 "omega_aspect",
-                 "omega_twi")
-} else if (coupled) {
+if (coupled) {
   stan.pars <- c(stan.pars,
                  "alpha",
                  "beta_size_gi",
@@ -385,63 +280,6 @@ if (multi_correlated) {
                  "beta_size_gi",
                  "beta_height_ratio_gi")
 }
-if (multi_with_size) {
-  stan.data <- list(gi=gi,
-                    site_gi=site_gi,
-                    tree_size_gi=tree_size_gi,
-                    height_ratio_gi=height_ratio_gi,
-                    radiation_gi=radiation_gi,
-                    slope_gi=slope_gi,
-                    aspect_gi=aspect_gi,
-                    twi_gi=twi_gi,
-                    ppt=ppt,
-                    tmn=tmn,
-                    n_years=n.years,
-                    n_indiv=n.indiv,
-                    n_sites_gi=n_sites_gi,
-                    n_months=n.months,
-                    dbh_inc=dbh_inc,
-                    tree_size-tree_size,
-                    height_ratio=height_ratio,
-                    slope=slope,
-                    aspect=aspect,
-                    twi=twi,
-                    site_dbh=site_dbh,
-                    species=species,
-                    n_sites_dbh=n_sites_dbh,
-                    n_obs=n_obs,
-                    n_species=n_species)
-  stan.pars <- c("beta_0_gi",
-                 "beta_ppt",
-                 "beta_tmn",
-                 "mu_year",
-                 "mu_indiv",
-                 "mu_site",
-                 "sigma_indiv",
-                 "sigma_site_gi",
-                 "eta_sq",
-                 "rho_sq",
-                 "sigma_sq",
-                 "beta_0_dbh",
-                 "beta_size_dbh",
-                 "beta_height_ratio_dbh",
-                 "gamma_radiation_dbh",
-                 "gamma_slope_dbh",
-                 "gamma_aspect_dbh",
-                 "gamma_twi_dbh",
-                 "beta_size_gi",
-                 "beta_height_ratio_gi",
-                 "gamma_radiation_gi",
-                 "gamma_slope_gi",
-                 "gamma_aspect_gi",
-                 "gamma_twi_gi",
-                 "sigma_resid",
-                 "sigma_site_dbh",
-                 "sigma_species",
-                 "log_lik_gi",
-                 "log_lik_dbh",
-                 "omega")
-}
 fit <- stan(file=model.file,
             data=stan.data,
             pars=stan.pars,
@@ -450,10 +288,9 @@ fit <- stan(file=model.file,
             thin=n.thin,
             chains=n.chains,
             cores=n.cores,
-            control=list(adapt_delta=0.95,
-                         max_treedepth=20))
+            adapt.delta=0.95)
 opt.old <- options(width=120)
-if (write.results.file) {
+if (!debug) {
   sink("results-gi-plus-dbh.txt", append=TRUE, split=TRUE)
 }
 cat("\n\n************************************************************\n",
@@ -461,14 +298,7 @@ cat("\n\n************************************************************\n",
 cat(date(), "\n",
     "With Gaussian process model for individuals\n",
     sep="")
-if (multi_with_size) {
-  cat("   gi and dbh regression multivariate correlated\n", sep="")
-  cat("   tree_size and height_ratio included as covariates in gi\n", sep="")
-} else if (multi_correlated) {
-  cat("   gi and dbh regression multivariate correlated\n", sep="")
-} else if (correlated) {
-  cat("   gi and dbh regression correlated\n", sep="")
-} else if (coupled) {
+if (coupled) {
   cat("   gi regression proportional to dbh regression\n", sep="")
 } else {
   cat("   gi and dbh regression uncoupled\n", sep="")
@@ -483,10 +313,7 @@ cat(before - after,
     "because of missing covariate data (plot, radiation, slope,\n",
     "aspect, twi)\n",
     sep="")
-print.pars <- c("beta_0_gi",
-                "beta_ppt",
-                "beta_tmn",
-                "mu_site",
+print.pars <- c("mu_site",
                 "sigma_indiv",
                 "sigma_site_gi",
                 "eta_sq",
@@ -499,6 +326,11 @@ print.pars <- c("beta_0_gi",
                 "gamma_slope_dbh",
                 "gamma_aspect_dbh",
                 "gamma_twi_dbh",
+                "beta_0_gi",
+                "beta_ppt",
+                "beta_tmn",
+                "beta_size_gi",
+                "beta_height_ratio_gi",
                 "gamma_radiation_gi",
                 "gamma_slope_gi",
                 "gamma_aspect_gi",
@@ -506,50 +338,9 @@ print.pars <- c("beta_0_gi",
                 "sigma_resid",
                 "sigma_site_dbh",
                 "sigma_species")
-if (multi_correlated) {
-  print.pars <- c(print.pars, "omega")
-} else if (correlated) {
-  print.pars <- c(print.pars, "omega_radiation",
-                  "omega_slope",
-                  "omega_aspect",
-                  "omega_twi")
-} else if (coupled) {
+if (coupled) {
   print.pars <- c(print.pars,
-                  "alpha",
-                  "beta_size_gi",
-                  "beta_height_ratio_gi")
-} else if (uncoupled) {
-  print.pars <- c(print.pars,
-                  "beta_size_gi",
-                  "beta_height_ratio_gi")
-}
-if (multi_with_size) {
-  print.pars <- c("beta_0_gi",
-                  "beta_ppt",
-                  "beta_tmn",
-                  "mu_site",
-                  "sigma_indiv",
-                  "sigma_site_gi",
-                  "eta_sq",
-                  "rho_sq",
-                  "sigma_sq",
-                  "beta_0_dbh",
-                  "beta_size_dbh",
-                  "beta_height_ratio_dbh",
-                  "gamma_radiation_dbh",
-                  "gamma_slope_dbh",
-                  "gamma_aspect_dbh",
-                  "gamma_twi_dbh",
-                  "beta_size_gi",
-                  "beta_height_ratio_gi",
-                  "gamma_radiation_gi",
-                  "gamma_slope_gi",
-                  "gamma_aspect_gi",
-                  "gamma_twi_gi",
-                  "sigma_resid",
-                  "sigma_site_dbh",
-                  "sigma_species",
-                  "omega")
+                  "alpha")
 }
 print(fit,
       pars=print.pars,
@@ -565,7 +356,7 @@ if (0) {
       "R^2:    ", round(r2$r2, 3), "\n",
       "lambda: ", round(r2$lambda, 3), sep="")
 }
-if (write.results.file) {
+ if (!debug) {
   sink()
 }
 options(opt.old)

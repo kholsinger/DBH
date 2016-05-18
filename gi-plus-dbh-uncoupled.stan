@@ -8,8 +8,8 @@ data {
   matrix[n_years,n_months] ppt;
   matrix[n_years,n_months] tmn;
   matrix[n_indiv,n_years] gi;
-  matrix[n_indiv,n_years] current_size;
   int<lower=0> site_gi[n_indiv];
+  vector[n_indiv] tree_size_gi;
   vector[n_indiv] height_ratio_gi;
   vector[n_indiv] radiation_gi;
   vector[n_indiv] slope_gi;
@@ -89,8 +89,7 @@ transformed parameters {
   //
   for (i in 1:n_indiv) {
     for (j in 1:n_years) {
-      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j]
-                            + beta_size_gi*current_size[i,j];
+      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j];
      }
   }
   // covariance matrix for Gaussian process
@@ -122,11 +121,15 @@ transformed parameters {
   // regression coefficients from dbh component to gi component
   //
   for (i in 1:n_indiv) {
-    alpha_indiv[i] <- beta_height_ratio_gi*height_ratio_gi[i]
+    alpha_indiv[i] <- beta_size_gi*tree_size_gi[i]
+                      + beta_height_ratio_gi*height_ratio_gi[i]
                       + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
                       + gamma_twi_gi*twi_gi[i];
+    // for comparison with separate model in growth-increment-with-site.stan
+    //
+    // alpha_indiv[i] <- 0;
   }
 }
 model {
@@ -182,7 +185,6 @@ model {
 generated quantities {
   vector[n_indiv] log_lik_gi;
   vector[n_obs] log_lik_dbh;
-  vector[n_obs] dbh_tilde;
 
   // calculate log likelihoods
   //
@@ -193,10 +195,5 @@ generated quantities {
   }
   for (i in 1:n_obs) {
     log_lik_dbh[i] <- normal_log(dbh_inc[i], mu_dbh_inc[i], sigma_resid);
-  }
-
-  // posterior predictions for dbh only (for now)
-  for (i in 1:n_obs) {
-    dbh_tilde[i] <- normal_rng(mu_dbh_inc[i], sigma_resid);
   }
 }
