@@ -45,6 +45,7 @@ parameters {
   real<lower=0> inv_rho_sq;
   real<lower=0> sigma_sq;
   real beta_size_gi;
+  real beta_size_gi_squared;
   real beta_height_ratio_gi;
   real gamma_radiation_gi;
   real gamma_slope_gi;
@@ -55,6 +56,7 @@ parameters {
   //
   real beta_0_dbh;
   real beta_size;
+  real beta_size_squared;
   real beta_height_ratio;
   real<lower=0> sigma_resid;
   real<lower=0> sigma_site_dbh;
@@ -108,6 +110,7 @@ transformed parameters {
   //
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_size*tree_size[i]
+                     + beta_size_squared*pow(tree_size[i], 2.0)
                      + beta_height_ratio*height_ratio[i]
                      + gamma_radiation_dbh*radiation[i]
                      + gamma_slope_dbh*slope[i]
@@ -122,6 +125,7 @@ transformed parameters {
   //
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- beta_size_gi*tree_size_gi[i]
+                      + beta_size_gi_squared*pow(tree_size_gi[i], 2.0)
                       + beta_height_ratio_gi*height_ratio_gi[i]
                       + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
