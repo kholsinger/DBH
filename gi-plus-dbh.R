@@ -7,7 +7,7 @@ debug <- FALSE
 compare <- FALSE
 uncoupled <- TRUE
 coupled <- FALSE
-write.results.file <- TRUE
+write.results.file <- FALSE
 save <- TRUE
 
 save <- save & !debug
@@ -279,6 +279,11 @@ gi.raw <- data[,gi.years]
 site_gi <- as.numeric(as.factor(data$plot))
 size.series <- get.size.series(data$T1_DBH, gi.raw, base_year,
                                start.series, end.series)
+## This funny line is here because we were experimenting with analyses using
+## increments in basal area (size.series$gi) instead of increments in radius.
+## Variation in basal area increments is primarily among trees rather than within
+## trees, and the among tree patterns don't make sense.
+##
 gi <- gi.raw
 tree_size_gi <- data$T1_BasalArea
 height_ratio_gi <- data$height.ratio

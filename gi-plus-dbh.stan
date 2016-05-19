@@ -49,6 +49,7 @@ parameters {
   //
   real beta_0_dbh;
   real beta_size;
+  real beta_size_squared;
   real beta_height_ratio;
   real<lower=0> sigma_resid;
   real<lower=0> sigma_site_dbh;
@@ -79,6 +80,7 @@ transformed parameters {
   // for shared component of the model, scaled by alpha from dbh component
   //
   real beta_size_gi;
+  real beta_size_gi_squared;
   real beta_height_ratio_gi;
   real gamma_radiation_gi;
   real gamma_slope_gi;
@@ -115,6 +117,7 @@ transformed parameters {
   //
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_size*tree_size[i]
+                     + beta_size_squared*pow(tree_size[i], 2.0)
                      + beta_height_ratio*height_ratio[i]
                      + gamma_radiation_dbh*radiation[i]
                      + gamma_slope_dbh*slope[i]
@@ -128,6 +131,7 @@ transformed parameters {
   // regression coefficients from dbh component to gi component
   //
   beta_size_gi <- alpha*beta_size;
+  beta_size_gi_squared <- alpha*beta_size_gi_squared;
   beta_height_ratio_gi <- alpha*beta_height_ratio;
   gamma_radiation_gi <- alpha*gamma_radiation_dbh;
   gamma_slope_gi <- alpha*gamma_slope_dbh;
@@ -135,6 +139,7 @@ transformed parameters {
   gamma_twi_gi <- alpha*gamma_twi_dbh;
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- beta_size_gi*tree_size_gi[i]
+                      + beta_size_gi_squared*pow(tree_size_gi[i], 2.0)
                       + beta_height_ratio_gi*height_ratio_gi[i]
                       + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
