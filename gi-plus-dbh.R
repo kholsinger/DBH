@@ -5,15 +5,13 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- TRUE
-coupled <- FALSE
-write.results.file <- FALSE
+uncoupled <- FALSE
+coupled <- TRUE
+write.results.file <- TRUE
 save <- TRUE
 
 save <- save & !debug
-
-save <- save & !debug
-write.results.file <- write.results.file & debug
+write.results.file <- write.results.file & !debug
 
 base_year <- 2004 # note that base_year is also defined on line 280
 
@@ -242,6 +240,7 @@ dbh$total <- standardize(dbh$radiation)
 dbh$Slope <- standardize(dbh$Slope)
 dbh$Aspect <- standardize(dbh$Aspect)
 dbh$TWI <- standardize(dbh$SagaTWI)
+dbh$BA2004 <- standardize(dbh$BA2004)
 ## exclude any individuals with NA for row
 ##
 data <- data[apply(data, 1, not.is.na.in.row),]
@@ -285,6 +284,7 @@ size.series <- get.size.series(data$T1_DBH, gi.raw, base_year,
 ## trees, and the among tree patterns don't make sense.
 ##
 gi <- gi.raw
+basal_area_gi <- data$BA2004
 tree_size_gi <- data$T1_BasalArea
 height_ratio_gi <- data$height.ratio
 radiation_gi <- data$total
@@ -301,6 +301,7 @@ tmn <- standardize(tmn)
 ## dbh data
 ##
 dbh_inc <- standardize(dbh$DBH_inc)
+basal_area <- dbh$BA2004
 tree_size <- dbh$T1_BasalArea
 height_ratio <- dbh$height.ratio
 site_dbh <- as.numeric(as.factor(dbh$plot))
@@ -316,6 +317,7 @@ stopifnot(n_species == max(species))
 
 stan.data <- list(gi=gi,
                   site_gi=site_gi,
+                  basal_area_gi=basal_area_gi,
                   tree_size_gi=tree_size_gi,
                   height_ratio_gi=height_ratio_gi,
                   radiation_gi=radiation_gi,
@@ -329,6 +331,7 @@ stan.data <- list(gi=gi,
                   n_sites_gi=n_sites_gi,
                   n_months=n.months,
                   dbh_inc=dbh_inc,
+                  basal_area=basal_area,
                   tree_size-tree_size,
                   height_ratio=height_ratio,
                   slope=slope,
@@ -353,6 +356,7 @@ stan.pars <- c("beta_0_gi",
                "beta_0_dbh",
                "beta_size",
                "beta_size_squared",
+               "beta_basal_area",
                "beta_height_ratio",
                "gamma_radiation_dbh",
                "gamma_slope_dbh",
@@ -360,6 +364,7 @@ stan.pars <- c("beta_0_gi",
                "gamma_twi_dbh",
                "beta_size_gi",
                "beta_size_gi_squared",
+               "beta_basal_area_gi",
                "beta_height_ratio_gi",
                "gamma_radiation_gi",
                "gamma_slope_gi",
@@ -416,6 +421,7 @@ print.pars <- c("mu_site",
                 "beta_0_dbh",
                 "beta_size",
                 "beta_size_squared",
+                "beta_basal_area",
                 "beta_height_ratio",
                 "gamma_radiation_dbh",
                 "gamma_slope_dbh",
@@ -426,6 +432,7 @@ print.pars <- c("mu_site",
                 "beta_tmn",
                 "beta_size_gi",
                 "beta_size_gi_squared",
+                "beta_basal_area_gi",
                 "beta_height_ratio_gi",
                 "gamma_radiation_gi",
                 "gamma_slope_gi",

@@ -9,6 +9,7 @@ data {
   matrix[n_years,n_months] tmn;
   matrix[n_indiv,n_years] gi;
   int<lower=0> site_gi[n_indiv];
+  vector[n_indiv] basal_area_gi;
   vector[n_indiv] tree_size_gi;
   vector[n_indiv] height_ratio_gi;
   vector[n_indiv] radiation_gi;
@@ -23,6 +24,7 @@ data {
   int<lower=0> n_species;
   vector[n_obs] dbh_inc;
   vector[n_obs] tree_size;
+  vector[n_obs] basal_area;
   vector[n_obs] height_ratio;
   vector[n_obs] radiation;
   vector[n_obs] slope;
@@ -50,6 +52,7 @@ parameters {
   real beta_0_dbh;
   real beta_size;
   real beta_size_squared;
+  real beta_basal_area;
   real beta_height_ratio;
   real<lower=0> sigma_resid;
   real<lower=0> sigma_site_dbh;
@@ -81,6 +84,7 @@ transformed parameters {
   //
   real beta_size_gi;
   real beta_size_gi_squared;
+  real beta_basal_area_gi;
   real beta_height_ratio_gi;
   real gamma_radiation_gi;
   real gamma_slope_gi;
@@ -118,6 +122,7 @@ transformed parameters {
   for (i in 1:n_obs) {
     mu_dbh_inc[i] <- beta_size*tree_size[i]
                      + beta_size_squared*pow(tree_size[i], 2.0)
+                     + beta_basal_area*basal_area[i]
                      + beta_height_ratio*height_ratio[i]
                      + gamma_radiation_dbh*radiation[i]
                      + gamma_slope_dbh*slope[i]
@@ -131,7 +136,8 @@ transformed parameters {
   // regression coefficients from dbh component to gi component
   //
   beta_size_gi <- alpha*beta_size;
-  beta_size_gi_squared <- alpha*beta_size_gi_squared;
+  beta_size_gi_squared <- alpha*beta_size_squared;
+  beta_basal_area_gi <- alpha*beta_basal_area;
   beta_height_ratio_gi <- alpha*beta_height_ratio;
   gamma_radiation_gi <- alpha*gamma_radiation_dbh;
   gamma_slope_gi <- alpha*gamma_slope_dbh;
@@ -140,6 +146,7 @@ transformed parameters {
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- beta_size_gi*tree_size_gi[i]
                       + beta_size_gi_squared*pow(tree_size_gi[i], 2.0)
+                      + beta_basal_area_gi*basal_area_gi[i]
                       + beta_height_ratio_gi*height_ratio_gi[i]
                       + gamma_radiation_gi*radiation_gi[i]
                       + gamma_slope_gi*slope_gi[i]
@@ -162,6 +169,8 @@ model {
   //
   beta_0_dbh ~ normal(0.0, 1.0);
   beta_size ~ normal(0.0, 1.0);
+  beta_size_squared ~ normal(0.0, 1.0);
+  beta_basal_area ~ normal(0.0, 1.0);
   beta_height_ratio ~ normal(0.0, 1.0);
   sigma_resid ~ normal(0.0, 1.0);
   sigma_site_dbh ~ normal(0.0, 1.0);
