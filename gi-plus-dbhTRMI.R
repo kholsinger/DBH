@@ -16,9 +16,9 @@ write.results.file <- write.results.file & !debug
 base_year <- 2004 # note that base_year is also defined on line 280
 
 if (coupled) {
-  model.file <- "gi-plus-dbhM2.stan"
+  model.file <- "gi-plus-dbhTRMI.stan"
 } else if (uncoupled) {
-  model.file <- "gi-plus-dbh-uncoupledM2.stan"
+  model.file <- "gi-plus-dbh-uncoupledTRMI.stan"
 } else {
   stop("Mis-specification of model")
 }
@@ -241,6 +241,7 @@ dbh$Slope <- standardize(dbh$Slope)
 dbh$Aspect <- standardize(dbh$Aspect)
 dbh$TWI <- standardize(dbh$SagaTWI)
 dbh$BA2004 <- standardize(dbh$BA2004)
+dbh$TRMI100 <- standardize(dbh$TRMI100)
 ## exclude any individuals with NA for row
 ##
 data <- data[apply(data, 1, not.is.na.in.row),]
@@ -291,24 +292,13 @@ radiation_gi <- data$total
 slope_gi <- data$Slope
 aspect_gi <- data$Aspect
 twi_gi <- data$TWI
+TRMI100_gi <- data$TRMI100
 n_sites_gi <- length(unique(site_gi))
 
 n.indiv <- nrow(data)
 
-### seasonal climate variables
-ppt.data <- data.frame(ppt)
-tmn.data <- data.frame(tmn)
-tmn.warm <- tmn.data$X1 + tmn.data$X2 + tmn.data$X9 + tmn.data$X10 + tmn.data$X11
-ppt.JFM <- ppt.data$X5 + ppt.data$X6 + ppt.data$X7
-ppt.cool <- ppt.data$X3 + ppt.data$X4 + ppt.data$X5 + ppt.data$X6 + ppt.data$X7
-
-
 ppt <- standardize(ppt)
 tmn <- standardize(tmn)
-ppt.cool <- standardize(ppt.cool)
-ppt.JFM <- standardize(ppt.JFM)
-tmn.warm <- standardize(tmn.warm)
-
 
 ## dbh data
 ##
@@ -322,6 +312,7 @@ radiation <- dbh$total
 slope <- dbh$Slope
 aspect <- dbh$Aspect
 twi <- dbh$TWI
+TRMI100 <- dbh$TRMI100
 n_sites_dbh <- length(unique(site_dbh))
 n_obs <- nrow(dbh)
 n_species <- length(unique(dbh$Species))
@@ -336,8 +327,9 @@ stan.data <- list(gi=gi,
                   slope_gi=slope_gi,
                   aspect_gi=aspect_gi,
                   twi_gi=twi_gi,
-                  ppt.cool=ppt.cool,
-                  tmn.warm=tmn.warm,
+                  TRMI100_gi=TRMI100_gi,
+                  ppt=ppt,
+                  tmn=tmn,
                   n_years=n.years,
                   n_indiv=n.indiv,
                   n_sites_gi=n_sites_gi,
@@ -349,6 +341,7 @@ stan.data <- list(gi=gi,
                   slope=slope,
                   aspect=aspect,
                   twi=twi,
+                  TRMI100=TRMI100,
                   site_dbh=site_dbh,
                   species=species,
                   n_sites_dbh=n_sites_dbh,
@@ -374,6 +367,7 @@ stan.pars <- c("beta_0_gi",
                "gamma_slope_dbh",
                "gamma_aspect_dbh",
                "gamma_twi_dbh",
+               "gamma_TRMI100_dbh",
                "beta_size_gi",
                "beta_size_gi_squared",
                "beta_basal_area_gi",
@@ -382,6 +376,7 @@ stan.pars <- c("beta_0_gi",
                "gamma_slope_gi",
                "gamma_aspect_gi",
                "gamma_twi_gi",
+               "gamma_TRMI100_gi",
                "sigma_resid",
                "sigma_site_dbh",
                "sigma_species",
@@ -439,6 +434,7 @@ print.pars <- c("mu_site",
                 "gamma_slope_dbh",
                 "gamma_aspect_dbh",
                 "gamma_twi_dbh",
+                "gamma_TRMI100_dbh",
                 "beta_0_gi",
                 "beta_ppt",
                 "beta_tmn",
@@ -450,6 +446,7 @@ print.pars <- c("mu_site",
                 "gamma_slope_gi",
                 "gamma_aspect_gi",
                 "gamma_twi_gi",
+                "gamma_TRMI100_gi",
                 "sigma_resid",
                 "sigma_site_dbh",
                 "sigma_species")
