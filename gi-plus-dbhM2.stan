@@ -7,8 +7,8 @@ data {
   int<lower=0> n_months;
   matrix[n_indiv,n_years] gi;
   int<lower=0> site_gi[n_indiv];
-  vector[n_years] ppt.cool;
-  vector[n_years] tmn.warm;
+  vector[n_years] ppt_cool;
+  vector[n_years] tmn_warm;
   vector[n_indiv] basal_area_gi;
   vector[n_indiv] tree_size_gi;
   vector[n_indiv] height_ratio_gi;
@@ -96,7 +96,7 @@ transformed parameters {
   rho_sq <- inv(inv_rho_sq);
   // beta_0_gi incorporated into intercept for mu_year_indiv through mu_indiv
   //
-  mu_year <- ppt.cool*beta_ppt + tmn.warm*beta_tmn;
+  mu_year <- ppt_cool*beta_ppt + tmn_warm*beta_tmn;
   // expectation for individual j in year i is sum of year
   // and indivdidual effects
   //
