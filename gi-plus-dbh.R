@@ -1,12 +1,13 @@
 library(reshape)
 library(rstan)
+library(shinystan)
 
 rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- FALSE
-coupled <- TRUE
+uncoupled <- TRUE
+coupled <- FALSE
 write.results.file <- TRUE
 save <- TRUE
 
@@ -291,7 +292,14 @@ radiation_gi <- data$total
 slope_gi <- data$Slope
 aspect_gi <- data$Aspect
 twi_gi <- data$TWI
+substrate_gi <- data$substrate
 n_sites_gi <- length(unique(site_gi))
+tmp <- data.frame(site=data$plot, substrate=substrate_gi)
+tmp <- unique(tmp)
+substrate_gi <- as.numeric(tmp$substrate)
+rm(tmp)
+
+n.substrates.gi <- length(unique(substrate_gi))
 
 n.indiv <- nrow(data)
 
@@ -310,10 +318,17 @@ radiation <- dbh$total
 slope <- dbh$Slope
 aspect <- dbh$Aspect
 twi <- dbh$TWI
+substrate <- dbh$substrate
 n_sites_dbh <- length(unique(site_dbh))
 n_obs <- nrow(dbh)
 n_species <- length(unique(dbh$Species))
 stopifnot(n_species == max(species))
+tmp <- data.frame(site=site_dbh, substrate=substrate)
+tmp <- unique(tmp)
+substrate <- as.numeric(tmp$substrate)
+rm(tmp)
+
+n.substrates.dbh <- length(unique(substrate))
 
 stan.data <- list(gi=gi,
                   site_gi=site_gi,
@@ -324,11 +339,13 @@ stan.data <- list(gi=gi,
                   slope_gi=slope_gi,
                   aspect_gi=aspect_gi,
                   twi_gi=twi_gi,
+                  substrate_gi=substrate_gi,
                   ppt=ppt,
                   tmn=tmn,
                   n_years=n.years,
                   n_indiv=n.indiv,
                   n_sites_gi=n_sites_gi,
+                  n_substrates_gi=n.substrates.gi,
                   n_months=n.months,
                   dbh_inc=dbh_inc,
                   basal_area=basal_area,
@@ -337,9 +354,11 @@ stan.data <- list(gi=gi,
                   slope=slope,
                   aspect=aspect,
                   twi=twi,
+                  substrate_dbh=substrate,
                   site_dbh=site_dbh,
                   species=species,
                   n_sites_dbh=n_sites_dbh,
+                  n_substrates_dbh=n.substrates.dbh,
                   n_obs=n_obs,
                   n_species=n_species)
 stan.pars <- c("beta_0_gi",
@@ -537,7 +556,9 @@ if (compare) {
               warmup=n.burnin,
               thin=n.thin,
               chains=n.chains,
-              cores=n.cores)
+              cores=n.cores,
+              control=list(adapt_delta=0.95,
+                           max_treedepth=20))
   opt.old <- options(width=120)
   cat("\n\nResults from growth-increment-with-site.stan\n")
   print(fit,
@@ -553,3 +574,4 @@ if (compare) {
   options(opt.old)
 }
 
+launch_shinystan(fit)
