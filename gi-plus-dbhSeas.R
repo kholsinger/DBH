@@ -301,13 +301,15 @@ tmn.data <- data.frame(tmn)
 tmn.warm <- tmn.data$X1 + tmn.data$X2 + tmn.data$X9 + tmn.data$X10 + tmn.data$X11
 ppt.JFM <- ppt.data$X5 + ppt.data$X6 + ppt.data$X7
 ppt.cool <- ppt.data$X3 + ppt.data$X4 + ppt.data$X5 + ppt.data$X6 + ppt.data$X7
-
+ppt.warm <- ppt.data$X1 + ppt.data$X2 + ppt.data$X9 + ppt.data$X10 + ppt.data$X11
 
 ppt <- standardize(ppt)
 tmn <- standardize(tmn)
-ppt.cool <- standardize(ppt.cool)
-ppt.JFM <- standardize(ppt.JFM)
 tmn.warm <- standardize(tmn.warm)
+ppt.JFM <- standardize(ppt.JFM)
+ppt.cool <- standardize(ppt.cool)
+ppt.warm <- standardize(ppt.warm)
+
 
 
 ## dbh data
@@ -355,8 +357,9 @@ stan.data <- list(gi=gi,
                   n_obs=n_obs,
                   n_species=n_species)
 stan.pars <- c("beta_0_gi",
-               "beta_ppt",
+               "beta_ppt_cool",
                "beta_tmn",
+               "beta_tmn_size",
                "mu_year",
                "mu_indiv",
                "mu_site",
@@ -440,8 +443,9 @@ print.pars <- c("mu_site",
                 "gamma_aspect_dbh",
                 "gamma_twi_dbh",
                 "beta_0_gi",
-                "beta_ppt",
+                "beta_ppt_cool",
                 "beta_tmn",
+                "beta_tmn_size",
                 "beta_size_gi",
                 "beta_size_gi_squared",
                 "beta_basal_area_gi",
