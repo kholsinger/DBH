@@ -16,7 +16,7 @@ data {
   vector[n_indiv] slope_gi;
   vector[n_indiv] aspect_gi;
   vector[n_indiv] twi_gi;
-  vector[n_indiv] TRMI100_gi;
+  vector[n_indiv] TRMI500_gi;
 
   // for dbh component
   //
@@ -31,7 +31,7 @@ data {
   vector[n_obs] slope;
   vector[n_obs] aspect;
   vector[n_obs] twi;
-  vector[n_obs] TRMI100;
+  vector[n_obs] TRMI500;
   int<lower=0> site_dbh[n_obs];
   int<lower=0> species[n_obs];
 }
@@ -69,7 +69,7 @@ parameters {
   real gamma_slope_dbh;
   real gamma_aspect_dbh;
   real gamma_twi_dbh;
-  real gamma_TRMI100_dbh;
+  real gamma_TRMI500_dbh;
 }
 transformed parameters {
   // for growth increment component of the model
@@ -93,7 +93,7 @@ transformed parameters {
   real gamma_slope_gi;
   real gamma_aspect_gi;
   real gamma_twi_gi;
-  real gamma_TRMI100_gi;
+  real gamma_TRMI500_gi;
 
   // for growth increment component of the model
   //
@@ -132,7 +132,7 @@ transformed parameters {
                      + gamma_slope_dbh*slope[i]
                      + gamma_aspect_dbh*aspect[i]
                      + gamma_twi_dbh*twi[i]
-                     + gamma_TRMI100_dbh*TRMI100[i]
+                     + gamma_TRMI500_dbh*TRMI500[i]
                      + eps_species[species[i]]
                      + eps_site[site_dbh[i]];
   }
@@ -148,7 +148,7 @@ transformed parameters {
   gamma_slope_gi <- alpha*gamma_slope_dbh;
   gamma_aspect_gi <- alpha*gamma_aspect_dbh;
   gamma_twi_gi <- alpha*gamma_twi_dbh;
-  gamma_TRMI100_gi <- alpha*gamma_TRMI100_dbh;
+  gamma_TRMI500_gi <- alpha*gamma_TRMI500_dbh;
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- beta_size_gi*tree_size_gi[i]
                       + beta_size_gi_squared*pow(tree_size_gi[i], 2.0)
@@ -158,7 +158,7 @@ transformed parameters {
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
                       + gamma_twi_gi*twi_gi[i]
-                      + gamma_TRMI100_gi*TRMI100_gi[i];
+                      + gamma_TRMI500_gi*TRMI500_gi[i];
   }
 }
 model {
@@ -192,7 +192,7 @@ model {
   gamma_slope_dbh ~ normal(0.0, 1.0);
   gamma_aspect_dbh ~ normal(0.0, 1.0);
   gamma_twi_dbh ~ normal(0.0, 1.0);
-  gamma_TRMI100_dbh ~ normal(0.0, 1.0);
+  gamma_TRMI500_dbh ~ normal(0.0, 1.0);
 
   // likelihood for growth increment component
   //

@@ -241,7 +241,7 @@ dbh$Slope <- standardize(dbh$Slope)
 dbh$Aspect <- standardize(dbh$Aspect)
 dbh$TWI <- standardize(dbh$SagaTWI)
 dbh$BA2004 <- standardize(dbh$BA2004)
-dbh$TRMI100 <- standardize(dbh$TRMI100)
+dbh$TRMI500 <- standardize(dbh$TRMI500)
 ## exclude any individuals with NA for row
 ##
 data <- data[apply(data, 1, not.is.na.in.row),]
@@ -292,7 +292,7 @@ radiation_gi <- data$total
 slope_gi <- data$Slope
 aspect_gi <- data$Aspect
 twi_gi <- data$TWI
-TRMI100_gi <- data$TRMI100
+TRMI500_gi <- data$TRMI500
 n_sites_gi <- length(unique(site_gi))
 
 n.indiv <- nrow(data)
@@ -312,7 +312,7 @@ radiation <- dbh$total
 slope <- dbh$Slope
 aspect <- dbh$Aspect
 twi <- dbh$TWI
-TRMI100 <- dbh$TRMI100
+TRMI500 <- dbh$TRMI500
 n_sites_dbh <- length(unique(site_dbh))
 n_obs <- nrow(dbh)
 n_species <- length(unique(dbh$Species))
@@ -327,7 +327,7 @@ stan.data <- list(gi=gi,
                   slope_gi=slope_gi,
                   aspect_gi=aspect_gi,
                   twi_gi=twi_gi,
-                  TRMI100_gi=TRMI100_gi,
+                  TRMI500_gi=TRMI500_gi,
                   ppt=ppt,
                   tmn=tmn,
                   n_years=n.years,
@@ -341,7 +341,7 @@ stan.data <- list(gi=gi,
                   slope=slope,
                   aspect=aspect,
                   twi=twi,
-                  TRMI100=TRMI100,
+                  TRMI500=TRMI500,
                   site_dbh=site_dbh,
                   species=species,
                   n_sites_dbh=n_sites_dbh,
@@ -367,7 +367,7 @@ stan.pars <- c("beta_0_gi",
                "gamma_slope_dbh",
                "gamma_aspect_dbh",
                "gamma_twi_dbh",
-               "gamma_TRMI100_dbh",
+               "gamma_TRMI500_dbh",
                "beta_size_gi",
                "beta_size_gi_squared",
                "beta_basal_area_gi",
@@ -376,7 +376,7 @@ stan.pars <- c("beta_0_gi",
                "gamma_slope_gi",
                "gamma_aspect_gi",
                "gamma_twi_gi",
-               "gamma_TRMI100_gi",
+               "gamma_TRMI500_gi",
                "sigma_resid",
                "sigma_site_dbh",
                "sigma_species",
@@ -434,7 +434,7 @@ print.pars <- c("mu_site",
                 "gamma_slope_dbh",
                 "gamma_aspect_dbh",
                 "gamma_twi_dbh",
-                "gamma_TRMI100_dbh",
+                "gamma_TRMI500_dbh",
                 "beta_0_gi",
                 "beta_ppt",
                 "beta_tmn",
@@ -446,7 +446,7 @@ print.pars <- c("mu_site",
                 "gamma_slope_gi",
                 "gamma_aspect_gi",
                 "gamma_twi_gi",
-                "gamma_TRMI100_gi",
+                "gamma_TRMI500_gi",
                 "sigma_resid",
                 "sigma_site_dbh",
                 "sigma_species")

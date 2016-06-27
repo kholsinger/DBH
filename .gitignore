@@ -39,3 +39,16 @@ Documents/*
 
 
 .Rproj.user
+dbh-process-dataME.R
+gi-plus-dbh-correlated.stan
+gi-plus-dbh-full.R
+gi-plus-dbh-multi-corr-wsize-full.stan
+gi-plus-dbh-multi-correlated.stan
+gi-plus-dbh-multi-correlated-with-size.stan
+gi-plus-dbhME.R
+MCNallDBH.csv
+MCNallDBH.xlsx
+MCNplotCovariates.csv
+MCNallDBH2.csv
+mcn_sample_NAD27.csv
+MCN_plot_covariate_dataNEW.csv
