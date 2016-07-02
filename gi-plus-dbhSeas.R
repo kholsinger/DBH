@@ -298,17 +298,37 @@ n.indiv <- nrow(data)
 ### seasonal climate variables
 ppt.data <- data.frame(ppt)
 tmn.data <- data.frame(tmn)
-tmn.warm <- tmn.data$X1 + tmn.data$X2 + tmn.data$X9 + tmn.data$X10 + tmn.data$X11
-ppt.JFM <- ppt.data$X5 + ppt.data$X6 + ppt.data$X7
+tmn.warm <- tmn.data$X1 + tmn.data$X2 + tmn.data$X9 + tmn.data$X10 + tmn.data$X11 ## should this be averaged
+tmn.cool <- tmn.data$X3 + tmn.data$X4 + tmn.data$X5 + tmn.data$X6 + tmn.data$X7 ## instead of summed?
 ppt.cool <- ppt.data$X3 + ppt.data$X4 + ppt.data$X5 + ppt.data$X6 + ppt.data$X7
 ppt.warm <- ppt.data$X1 + ppt.data$X2 + ppt.data$X9 + ppt.data$X10 + ppt.data$X11
+ppt.JFM <- ppt.data$X5 + ppt.data$X6 + ppt.data$X7
 
 ppt <- standardize(ppt)
 tmn <- standardize(tmn)
 tmn.warm <- standardize(tmn.warm)
-ppt.JFM <- standardize(ppt.JFM)
+tmn.cool <- standardize(tmn.cool)
 ppt.cool <- standardize(ppt.cool)
 ppt.warm <- standardize(ppt.warm)
+ppt.JFM <- standardize(ppt.JFM)
+
+#clim.data <- cbind(tmn.warm, tmn.cool, ppt.warm, ppt.cool)
+#seas.cor <- cor(clim.data)
+#rcorr(as.matrix(clim.data)) # library {Hmisc}
+#corrplot(seas.cor) # library {corrplot}
+#chart.Correlation(clim.data) # library {PerformanceAnalytics}
+# see also corrgram()
+
+#month.clim.data <- cbind(ppt.data, tmn.data)
+#colnames(month.clim.data) <- c("pS.ppt", "pO.ppt", "pN.ppt", "pD.ppt", "J.ppt", "F.ppt", 
+#                               "M.ppt", "A.ppt", "M.ppt", "J.ppt", "J.ppt", "A.ppt", 
+#                               "pS.tmn", "pO.tmn", "pN.tmn", "pD.tmn", "J.tmn", "F.tmn", 
+#                               "M.tmn", "A.tmn", "M.tmn", "J.tmn", "J.tmn", "A.tmn")
+#month.cor <- cor(month.clim.data)
+#chart.Correlation(month.clim.data)
+#rcorr(as.matrix(month.clim.data))
+#corrplot(month.cor)
+#abs(month.cor) > 0.5
 
 
 
@@ -339,6 +359,8 @@ stan.data <- list(gi=gi,
                   aspect_gi=aspect_gi,
                   twi_gi=twi_gi,
                   ppt_cool=ppt.cool,
+                  ppt_warm=ppt.warm,
+                  tmn_cool=tmn.cool,
                   tmn_warm=tmn.warm,
                   n_years=n.years,
                   n_indiv=n.indiv,
@@ -358,9 +380,13 @@ stan.data <- list(gi=gi,
                   n_species=n_species)
 stan.pars <- c("beta_0_gi",
                "beta_ppt_cool",
-               "beta_tmn",
-               "beta_tmn_size",
-               "beta_ppt_size",
+               "beta_ppt_warm",
+               "beta_tmn_cool",
+               "beta_tmn_warm",
+               "beta_twarm_size",
+               "beta_pcool_size",
+               "beta_tcool_size",
+               "beta_pwarm_size",
                "mu_year",
                "mu_indiv",
                "mu_site",
@@ -445,9 +471,13 @@ print.pars <- c("mu_site",
                 "gamma_twi_dbh",
                 "beta_0_gi",
                 "beta_ppt_cool",
-                "beta_tmn",
-                "beta_tmn_size",
-                "beta_ppt_size",
+                "beta_ppt_warm",
+                "beta_tmn_cool",
+                "beta_tmn_warm",
+                "beta_twarm_size",
+                "beta_pcool_size",
+                "beta_tcool_size", 
+                "beta_pwarm_size",
                 "beta_size_gi",
                 "beta_size_gi_squared",
                 "beta_basal_area_gi",
