@@ -43,10 +43,12 @@ parameters {
   real beta_ppt_warm;
   real beta_tmn_cool;
   real beta_tmn_warm;
-  real beta_pcool_sq;
-  real beta_pwarm_sq;
-  real beta_tcool_sq;
-  real beta_twarm_sq;
+  real beta_TP_warm;
+  real beta_TP_cool;
+//  real beta_pcool_sq;
+//  real beta_pwarm_sq;
+//  real beta_tcool_sq;
+//  real beta_twarm_sq;
 //  real beta_pcool_htr;
 //  real beta_twarm_htr;
 //  real beta_tcool_htr;
@@ -116,13 +118,13 @@ transformed parameters {
   rho_sq <- inv(inv_rho_sq);
   // beta_0_gi incorporated into intercept for mu_year_indiv through mu_indiv
   //
-//  mu_year <- ppt_cool*beta_ppt_cool + tmn_warm*beta_tmn_warm + ppt_warm*beta_ppt_warm + //tmn_cool*beta_tmn_cool;
+  mu_year <- ppt_cool*beta_ppt_cool + tmn_warm*beta_tmn_warm + ppt_warm*beta_ppt_warm + tmn_cool*beta_tmn_cool + ppt_cool*tmn_cool*beta_TP_cool + ppt_warm*tmn_warm*beta_TP_warm;
 
 // quadratic terms climate  
-  mu_year <- ppt_cool*beta_ppt_cool + beta_pcool_sq*pow(ppt_cool, 2.0) 
-             + tmn_warm*beta_tmn_warm + beta_twarm_sq*pow(tmn_warm, 2.0) 
-             + ppt_warm*beta_ppt_warm + beta_pwarm_sq*pow(ppt_warm, 2.0) 
-             + tmn_cool*beta_tmn_cool + beta_tcool_sq*pow(tmn_cool, 2.0);             
+//  mu_year <- ppt_cool*beta_ppt_cool + beta_pcool_sq*pow(ppt_cool, 2.0) 
+//             + tmn_warm*beta_tmn_warm + beta_twarm_sq*pow(tmn_warm, 2.0) 
+//             + ppt_warm*beta_ppt_warm + beta_pwarm_sq*pow(ppt_warm, 2.0) 
+//             + tmn_cool*beta_tmn_cool + beta_tcool_sq*pow(tmn_cool, 2.0);             
   // expectation for individual j in year i is sum of year
   // and indivdidual effects
   //
@@ -194,10 +196,12 @@ model {
   beta_ppt_warm ~ normal(0.0, 1.0);
   beta_tmn_cool ~ normal(0.0, 1.0);
   beta_tmn_warm ~ normal(0.0, 1.0);
-  beta_pcool_sq ~ normal(0.0, 1.0);
-  beta_pwarm_sq ~ normal(0.0, 1.0);
-  beta_tcool_sq ~ normal(0.0, 1.0);
-  beta_twarm_sq ~ normal(0.0, 1.0);
+  beta_TP_cool ~ normal(0.0, 1.0);
+  beta_TP_warm ~ normal(0.0, 1.0);
+//  beta_pcool_sq ~ normal(0.0, 1.0);
+//  beta_pwarm_sq ~ normal(0.0, 1.0);
+//  beta_tcool_sq ~ normal(0.0, 1.0);
+//  beta_twarm_sq ~ normal(0.0, 1.0);
 //  beta_pcool_htr ~ normal(0.0, 1.0);
 //  beta_tcool_htr ~ normal(0.0, 1.0);
 //  beta_pwarm_htr ~ normal(0.0, 1.0);
