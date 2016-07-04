@@ -312,24 +312,29 @@ ppt.cool <- standardize(ppt.cool)
 ppt.warm <- standardize(ppt.warm)
 ppt.JFM <- standardize(ppt.JFM)
 
-#clim.data <- cbind(tmn.warm, tmn.cool, ppt.warm, ppt.cool)
+####### examine correlation structure of climate data
+#clim.data <- cbind(tmn.warm, tmn.cool, ppt.warm, ppt.cool) #these are standardized
 #seas.cor <- cor(clim.data)
 #rcorr(as.matrix(clim.data)) # library {Hmisc}
 #corrplot(seas.cor) # library {corrplot}
 #chart.Correlation(clim.data) # library {PerformanceAnalytics}
 # see also corrgram()
 
-#month.clim.data <- cbind(ppt.data, tmn.data)
-#colnames(month.clim.data) <- c("pS.ppt", "pO.ppt", "pN.ppt", "pD.ppt", "J.ppt", "F.ppt", 
-#                               "M.ppt", "A.ppt", "M.ppt", "J.ppt", "J.ppt", "A.ppt", 
-#                               "pS.tmn", "pO.tmn", "pN.tmn", "pD.tmn", "J.tmn", "F.tmn", 
-#                               "M.tmn", "A.tmn", "M.tmn", "J.tmn", "J.tmn", "A.tmn")
+#month.clim.data <- cbind(ppt.data, tmn.data) #these are not standardized
+#colnames(month.clim.data) <- c("pS.P", "pO.P", "pN.P", "pD.P", "Jan.P", "F.P", 
+#                               "Mar.P", "Apr.P", "May.P", "Jun.P", "Jul.P", "Aug.P", 
+#                               "pS.T", "pO.T", "pN.T", "pD.T", "Jan.T", "F.T", 
+#                               "Mar.T", "Apr.T", "May.T", "Jun.T", "Jul.T", "Aug.T")
 #month.cor <- cor(month.clim.data)
 #chart.Correlation(month.clim.data)
 #rcorr(as.matrix(month.clim.data))
 #corrplot(month.cor)
 #abs(month.cor) > 0.5
 
+############# PCA of temporal variation in climate (2*12 monthly variables, meanT and P)
+#pca.climate <- prcomp(month.clim.data, center=TRUE, scale=TRUE)
+#summary(pca.climate) # have to go to PC13 to get to 90% of variance explained!
+#biplot(pca.climate)
 
 
 ## dbh data
