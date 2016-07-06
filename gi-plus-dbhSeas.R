@@ -230,6 +230,20 @@ dbh <- subset(dbh, Tree.number!="691")
 ## exclude single outlier in gi data
 data <- subset(data, id!="1560562a")
 
+dbh.rows <-  seq(1:nrow(dbh))
+dbh.sample.1 <- sort(sample(dbh.rows, 253))
+dbh.sample.2 <- setdiff(dbh.rows, dbh.sample.1)
+
+data.rows <-  seq(1:nrow(data))
+data.sample.1 <- sort(sample(data.rows, 64))
+data.sample.2 <- setdiff(dbh.rows, data.sample.1)
+
+#dbh <- dbh[dbh.sample.1,]
+#data <- data[data.sample.1,]
+
+dbh <- dbh[dbh.sample.2,]
+data <- data[data.sample.2,]
+
 ## standardize now so that these covariates match between the gi data
 ## and the dbh data
 ##
@@ -298,10 +312,10 @@ n.indiv <- nrow(data)
 ### seasonal climate variables
 ppt.data <- data.frame(ppt)
 tmn.data <- data.frame(tmn)
-tmn.warm <- tmn.data$X1 + tmn.data$X2 + tmn.data$X9 + tmn.data$X10 + tmn.data$X11 ## should this be averaged
-tmn.cool <- tmn.data$X3 + tmn.data$X4 + tmn.data$X5 + tmn.data$X6 + tmn.data$X7 ## instead of summed?
+tmn.warm <- (tmn.data$X1 + tmn.data$X2 + tmn.data$X8 + tmn.data$X9 + tmn.data$X10 + tmn.data$X11 + tmn.data$X12)/7 
+tmn.cool <- (tmn.data$X3 + tmn.data$X4 + tmn.data$X5 + tmn.data$X6 + tmn.data$X7)/5
 ppt.cool <- ppt.data$X3 + ppt.data$X4 + ppt.data$X5 + ppt.data$X6 + ppt.data$X7
-ppt.warm <- ppt.data$X1 + ppt.data$X2 + ppt.data$X9 + ppt.data$X10 + ppt.data$X11
+ppt.warm <- ppt.data$X1 + ppt.data$X2 + ppt.data$X8 + ppt.data$X9 + ppt.data$X10 + ppt.data$X11 + ppt.data$X12
 ppt.JFM <- ppt.data$X5 + ppt.data$X6 + ppt.data$X7
 
 ppt <- standardize(ppt)
@@ -318,6 +332,8 @@ ppt.JFM <- standardize(ppt.JFM)
 #rcorr(as.matrix(clim.data)) # library {Hmisc}
 #corrplot(seas.cor) # library {corrplot}
 #chart.Correlation(clim.data) # library {PerformanceAnalytics}
+#chart.Correlation(data.climate[,3:6])
+#chart.Correlation(data.climate[,c(3,5,6)])
 # see also corrgram()
 
 #month.clim.data <- cbind(ppt.data, tmn.data) #these are not standardized
@@ -329,7 +345,8 @@ ppt.JFM <- standardize(ppt.JFM)
 #chart.Correlation(month.clim.data)
 #rcorr(as.matrix(month.clim.data))
 #corrplot(month.cor)
-#abs(month.cor) > 0.5
+#high.cor <- abs(month.cor) > 0.5
+#tot.high <- sum(high.cor)
 
 ############# PCA of temporal variation in climate (2*12 monthly variables, meanT and P)
 #pca.climate <- prcomp(month.clim.data, center=TRUE, scale=TRUE)
@@ -388,8 +405,8 @@ stan.pars <- c("beta_0_gi",
                "beta_ppt_warm",
                "beta_tmn_cool",
                "beta_tmn_warm",
-               "beta_TP_warm",
-               "beta_TP_cool",
+#               "beta_TP_warm",
+#               "beta_TP_cool",
 #               "beta_pcool_sq",
 #               "beta_pwarm_sq",
 #               "beta_tcool_sq",
@@ -402,10 +419,10 @@ stan.pars <- c("beta_0_gi",
 #               "beta_pwarm_BA",
 #               "beta_tcool_BA",
 #               "beta_twarm_BA",
-#               "beta_twarm_size",
-#               "beta_pcool_size",
-#               "beta_tcool_size",
-#               "beta_pwarm_size",
+               "beta_twarm_size",
+               "beta_pcool_size",
+               "beta_tcool_size",
+               "beta_pwarm_size",
                "mu_year",
                "mu_indiv",
                "mu_site",
@@ -473,6 +490,7 @@ cat(before - after,
     "because of missing covariate data (plot, radiation, slope,\n",
     "aspect, twi)\n",
     sep="")
+cat("sample of the other half of the data\n")
 print.pars <- c("mu_site",
                 "sigma_indiv",
                 "sigma_site_gi",
@@ -493,8 +511,8 @@ print.pars <- c("mu_site",
                 "beta_ppt_warm",
                 "beta_tmn_cool",
                 "beta_tmn_warm",
-                "beta_TP_warm",
-                "beta_TP_cool",
+#                "beta_TP_warm",
+#                "beta_TP_cool",
 #                "beta_pcool_sq",
 #                "beta_pwarm_sq",
 #                "beta_tcool_sq",
@@ -507,10 +525,10 @@ print.pars <- c("mu_site",
 #                "beta_pwarm_BA",
 #                "beta_tcool_BA",
 #                "beta_twarm_BA",
-#                "beta_twarm_size",
-#                "beta_pcool_size",
-#                "beta_tcool_size", 
-#                "beta_pwarm_size",
+                "beta_twarm_size",
+                "beta_pcool_size",
+                "beta_tcool_size", 
+                "beta_pwarm_size",
                 "beta_size_gi",
                 "beta_size_gi_squared",
                 "beta_basal_area_gi",

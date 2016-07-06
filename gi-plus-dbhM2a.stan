@@ -8,8 +8,8 @@ data {
   matrix[n_indiv,n_years] gi;
   int<lower=0> site_gi[n_indiv];
   vector[n_years] ppt_cool;
-  vector[n_years] ppt_warm;
-  vector[n_years] tmn_cool;
+//  vector[n_years] ppt_warm;
+//  vector[n_years] tmn_cool;
   vector[n_years] tmn_warm;
   vector[n_indiv] basal_area_gi;
   vector[n_indiv] tree_size_gi;
@@ -40,8 +40,8 @@ parameters {
   //
   real beta_0_gi;
   real beta_ppt_cool;
-  real beta_ppt_warm;
-  real beta_tmn_cool;
+//  real beta_ppt_warm;
+//  real beta_tmn_cool;
   real beta_tmn_warm;
 //  real beta_TP_warm;
 //  real beta_TP_cool;
@@ -53,14 +53,14 @@ parameters {
 //  real beta_twarm_htr;
 //  real beta_tcool_htr;
 //  real beta_pwarm_htr;
-//  real beta_pcool_BA;
-//  real beta_twarm_BA;
+  real beta_pcool_BA;
+  real beta_twarm_BA;
 //  real beta_tcool_BA;
 //  real beta_pwarm_BA;
   real beta_twarm_size;
-  real beta_tcool_size;
+//  real beta_tcool_size;
   real beta_pcool_size;
-  real beta_pwarm_size;
+//  real beta_pwarm_size;
   vector[n_indiv] mu_indiv;
   vector[n_sites_gi] mu_site;
   real<lower=0> sigma_indiv;
@@ -118,7 +118,9 @@ transformed parameters {
   rho_sq <- inv(inv_rho_sq);
   // beta_0_gi incorporated into intercept for mu_year_indiv through mu_indiv
   //
-  mu_year <- ppt_cool*beta_ppt_cool + tmn_warm*beta_tmn_warm + ppt_warm*beta_ppt_warm + tmn_cool*beta_tmn_cool;
+  mu_year <- ppt_cool*beta_ppt_cool + tmn_warm*beta_tmn_warm;
+
+//  + tmn_cool*beta_tmn_cool + ppt_warm*beta_ppt_warm;
 
 // interactions between T and P within a season
 //+ ppt_cool*tmn_cool*beta_TP_cool + ppt_warm*tmn_warm*beta_TP_warm;
@@ -133,13 +135,13 @@ transformed parameters {
   //
   for (i in 1:n_indiv) {
     for (j in 1:n_years) {
-//      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j];
+      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j] + ppt_cool[j]*basal_area_gi[i]*beta_pcool_BA + tmn_warm[j]*basal_area_gi[i]*beta_twarm_BA + ppt_cool[j]*tree_size_gi[i]*beta_pcool_size + tmn_warm[j]*tree_size_gi[i]*beta_twarm_size;
 // climate*height ratio interactions
 //+ mu_year[j] + ppt_cool[j]*height_ratio_gi[i]*beta_pcool_htr + ppt_warm[j]*height_ratio_gi[i]*beta_pwarm_htr + tmn_cool[j]*height_ratio_gi[i]*beta_tcool_htr + tmn_warm[j]*height_ratio_gi[i]*beta_twarm_htr;
 // climate*plot basal area interactions
 //+ ppt_cool[j]*basal_area_gi[i]*beta_pcool_BA + ppt_warm[j]*basal_area_gi[i]*beta_pwarm_BA + tmn_cool[j]*basal_area_gi[i]*beta_tcool_BA + tmn_warm[j]*basal_area_gi[i]*beta_twarm_BA;
 // climate*size interactions
-        mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j] + tmn_warm[j]*tree_size_gi[i]*beta_twarm_size + tmn_cool[j]*tree_size_gi[i]*beta_tcool_size + ppt_cool[j]*tree_size_gi[i]*beta_pcool_size + ppt_warm[j]*tree_size_gi[i]*beta_pwarm_size;
+//        mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j] + tmn_warm[j]*tree_size_gi[i]*beta_twarm_size + tmn_cool[j]*tree_size_gi[i]*beta_tcool_size + ppt_cool[j]*tree_size_gi[i]*beta_pcool_size + ppt_warm[j]*tree_size_gi[i]*beta_pwarm_size;
      }
   }
   // covariance matrix for Gaussian process
@@ -196,8 +198,8 @@ model {
   //
   beta_0_gi ~ normal(0.0, 1.0);
   beta_ppt_cool ~ normal(0.0, 1.0);
-  beta_ppt_warm ~ normal(0.0, 1.0);
-  beta_tmn_cool ~ normal(0.0, 1.0);
+//  beta_ppt_warm ~ normal(0.0, 1.0);
+//  beta_tmn_cool ~ normal(0.0, 1.0);
   beta_tmn_warm ~ normal(0.0, 1.0);
 //  beta_TP_cool ~ normal(0.0, 1.0);
 //  beta_TP_warm ~ normal(0.0, 1.0);
@@ -209,14 +211,14 @@ model {
 //  beta_tcool_htr ~ normal(0.0, 1.0);
 //  beta_pwarm_htr ~ normal(0.0, 1.0);
 //  beta_twarm_htr ~ normal(0.0, 1.0);
-//  beta_pcool_BA ~ normal(0.0, 1.0);
+  beta_pcool_BA ~ normal(0.0, 1.0);
 //  beta_tcool_BA ~ normal(0.0, 1.0);
 //  beta_pwarm_BA ~ normal(0.0, 1.0);
-//  beta_twarm_BA ~ normal(0.0, 1.0);
+  beta_twarm_BA ~ normal(0.0, 1.0);
   beta_twarm_size ~ normal(0.0, 1.0);
   beta_pcool_size ~ normal(0.0, 1.0);
-  beta_tcool_size ~ normal(0.0, 1.0);
-  beta_pwarm_size ~ normal(0.0, 1.0);
+//  beta_tcool_size ~ normal(0.0, 1.0);
+//  beta_pwarm_size ~ normal(0.0, 1.0);
   sigma_indiv ~ normal(0.0, 1.0);
   sigma_site_gi ~ normal(0.0, 1.0);
   eta_sq ~ normal(0.0, 1.0);
