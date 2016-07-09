@@ -8,7 +8,7 @@ debug <- FALSE
 compare <- FALSE
 uncoupled <- TRUE
 coupled <- FALSE
-write.results.file <- TRUE
+write.results.file <- FALSE
 save <- TRUE
 
 save <- save & !debug

@@ -2,7 +2,7 @@ data {
   // for growth increment component
   //
   int<lower=0> n_sites_gi;
-  int<lower=0> n_substrates_gi;
+//  int<lower=0> n_substrates_gi;
   int<lower=0> n_years;
   int<lower=0> n_indiv;
   int<lower=0> n_months;
@@ -10,7 +10,7 @@ data {
   matrix[n_years,n_months] tmn;
   matrix[n_indiv,n_years] gi;
   int<lower=0> site_gi[n_indiv];
-  int<lower=0> substrate_gi[n_sites_gi];
+//  int<lower=0> substrate_gi[n_sites_gi];
   vector[n_indiv] basal_area_gi;
   vector[n_indiv] tree_size_gi;
   vector[n_indiv] height_ratio_gi;
@@ -22,7 +22,7 @@ data {
   // for dbh component
   //
   int<lower=0> n_sites_dbh;
-  int<lower=0> n_substrates_dbh;
+//  int<lower=0> n_substrates_dbh;
   int<lower=0> n_obs;
   int<lower=0> n_species;
   vector[n_obs] dbh_inc;
@@ -35,12 +35,13 @@ data {
   vector[n_obs] twi;
   int<lower=0> site_dbh[n_obs];
   int<lower=0> species[n_obs];
-  int<lower=0> substrate_dbh[n_sites_dbh];
+//  int<lower=0> substrate_dbh[n_sites_dbh];
 }
 parameters {
   // for growth increment component
   //
-  vector[n_substrates_gi] beta_0_gi;
+//  vector[n_substrates_gi] beta_0_gi;
+  real beta_0_gi;
   vector[n_months] beta_ppt;
   vector[n_months] beta_tmn;
   vector[n_indiv] mu_indiv;
@@ -61,7 +62,8 @@ parameters {
 
   // for dbh component
   //
-  vector[n_substrates_dbh] beta_0_dbh;
+//  vector[n_substrates_dbh] beta_0_dbh;
+  real beta_0_dbh;
   real beta_size;
   real beta_size_squared;
   real beta_basal_area;
@@ -149,6 +151,7 @@ transformed parameters {
 model {
   // priors for growth increment component
   //
+  beta_0_gi ~ normal(0.0, 1.0);
   beta_ppt ~ normal(0.0, 1.0);
   beta_tmn ~ normal(0.0, 1.0);
   sigma_indiv ~ normal(0.0, 1.0);
@@ -164,6 +167,7 @@ model {
   gamma_twi_gi ~ normal(0.0, 1.0);
   // priors for dbh component
   //
+  beta_0_dbh ~ normal(0.0, 1.0);
   beta_size ~ normal(0.0, 1.0);
   beta_height_ratio ~ normal(0.0, 1.0);
   sigma_resid ~ normal(0.0, 1.0);
@@ -175,12 +179,12 @@ model {
   gamma_twi_dbh ~ normal(0.0, 1.0);
   // priors for substrate effects
   //
-  for (i in 1:n_substrates_gi) {
-    beta_0_gi[i] ~ normal(0.0, 1.0);
-  }
-  for (i in 1:n_substrates_dbh) {
-    beta_0_dbh[i] ~ normal(0.0, 1.0);
-  }
+//  for (i in 1:n_substrates_gi) {
+//    beta_0_gi[i] ~ normal(0.0, 1.0);
+//  }
+//  for (i in 1:n_substrates_dbh) {
+//    beta_0_dbh[i] ~ normal(0.0, 1.0);
+//  }
 
   // likelihood for growth increment component
   //
@@ -188,7 +192,8 @@ model {
     mu_indiv[i] ~ normal(mu_site[site_gi[i]] + alpha_indiv[i], sigma_indiv);
   }
   for (i in 1:n_sites_gi) {
-    mu_site[i] ~ normal(beta_0_gi[substrate_gi[i]], sigma_site_gi);
+    mu_site[i] ~ normal(beta_0_gi, sigma_site_gi);
+//    mu_site[i] ~ normal(beta_0_gi[substrate_gi[i]], sigma_site_gi);
   }
   // individual site x year combinations
   //
@@ -199,9 +204,10 @@ model {
   // likelihood for dbh component
   //
   eps_species ~ normal(0.0, sigma_species);
-  for (i in 1:n_sites_dbh) {
-    eps_site[i] ~ normal(beta_0_dbh[substrate_dbh[i]], sigma_site_dbh);
-  }
+  eps_site ~ normal(beta_0_dbh, sigma_site_dbh);
+//  for (i in 1:n_sites_dbh) {
+//    eps_site[i] ~ normal(beta_0_dbh[substrate_dbh[i]], sigma_site_dbh);
+//  }
   dbh_inc ~ normal(mu_dbh_inc, sigma_resid);
 }
 generated quantities {

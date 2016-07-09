@@ -2,11 +2,13 @@ data {
   // for growth increment component
   //
   int<lower=0> n_sites_gi;
+//  int<lower=0> n_substrates_gi;
   int<lower=0> n_years;
   int<lower=0> n_indiv;
   int<lower=0> n_months;
   matrix[n_indiv,n_years] gi;
   int<lower=0> site_gi[n_indiv];
+//  int<lower=0> substrate_gi[n_sites_gi];
   vector[n_years] ppt_cool;
   vector[n_years] ppt_warm;
   vector[n_years] tmn_cool;
@@ -22,11 +24,12 @@ data {
   // for dbh component
   //
   int<lower=0> n_sites_dbh;
+//  int<lower=0> n_substrates_dbh;
   int<lower=0> n_obs;
   int<lower=0> n_species;
   vector[n_obs] dbh_inc;
-  vector[n_obs] tree_size;
   vector[n_obs] basal_area;
+  vector[n_obs] tree_size;
   vector[n_obs] height_ratio;
   vector[n_obs] radiation;
   vector[n_obs] slope;
@@ -34,10 +37,12 @@ data {
   vector[n_obs] twi;
   int<lower=0> site_dbh[n_obs];
   int<lower=0> species[n_obs];
+//  int<lower=0> substrate_dbh[n_sites_dbh];
 }
 parameters {
   // for growth increment component
   //
+//  vector[n_substrates_gi] beta_0_gi;
   real beta_0_gi;
   real beta_ppt_cool;
   real beta_ppt_warm;
@@ -49,14 +54,14 @@ parameters {
 //  real beta_pwarm_sq;
 //  real beta_tcool_sq;
 //  real beta_twarm_sq;
-//  real beta_pcool_htr;
-//  real beta_twarm_htr;
-//  real beta_tcool_htr;
-//  real beta_pwarm_htr;
-  real beta_pcool_BA;
-  real beta_twarm_BA;
-  real beta_tcool_BA;
-  real beta_pwarm_BA;
+  real beta_pcool_htr;
+  real beta_twarm_htr;
+  real beta_tcool_htr;
+  real beta_pwarm_htr;
+//  real beta_pcool_BA;
+//  real beta_twarm_BA;
+//  real beta_tcool_BA;
+//  real beta_pwarm_BA;
 //  real beta_twarm_size;
 //  real beta_tcool_size;
 //  real beta_pcool_size;
@@ -68,9 +73,18 @@ parameters {
   real<lower=0> eta_sq;
   real<lower=0> inv_rho_sq;
   real<lower=0> sigma_sq;
+  real beta_size_gi;
+  real beta_size_gi_squared;
+  real beta_basal_area_gi;
+  real beta_height_ratio_gi;
+  real gamma_radiation_gi;
+  real gamma_slope_gi;
+  real gamma_aspect_gi;
+  real gamma_twi_gi;
 
   // for dbh component
   //
+//  vector[n_substrates_dbh] beta_0_dbh;
   real beta_0_dbh;
   real beta_size;
   real beta_size_squared;
@@ -81,10 +95,6 @@ parameters {
   real<lower=0> sigma_species;
   vector[n_sites_dbh] eps_site;
   vector[n_species] eps_species;
-
-  // for the connection
-  //
-  real<lower=0> alpha;
   real gamma_radiation_dbh;
   real gamma_slope_dbh;
   real gamma_aspect_dbh;
@@ -99,26 +109,16 @@ transformed parameters {
   cov_matrix[n_years] Sigma;
   // for dbh component of the model
   //
-  vector[n_obs] mu_indiv_dbh;
   vector[n_obs] mu_dbh_inc;
   vector[n_obs] alpha_indiv;
-  // for shared component of the model, scaled by alpha from dbh component
-  //
-  real beta_size_gi;
-  real beta_size_gi_squared;
-  real beta_basal_area_gi;
-  real beta_height_ratio_gi;
-  real gamma_radiation_gi;
-  real gamma_slope_gi;
-  real gamma_aspect_gi;
-  real gamma_twi_gi;
 
   // for growth increment component of the model
   //
   rho_sq <- inv(inv_rho_sq);
   // beta_0_gi incorporated into intercept for mu_year_indiv through mu_indiv
   //
-  mu_year <- ppt_cool*beta_ppt_cool + tmn_warm*beta_tmn_warm + ppt_warm*beta_ppt_warm + tmn_cool*beta_tmn_cool;
+    mu_year <- ppt_cool*beta_ppt_cool + tmn_warm*beta_tmn_warm 
+             + ppt_warm*beta_ppt_warm + tmn_cool*beta_tmn_cool;
 
 // interactions between T and P within a season
 //+ ppt_cool*tmn_cool*beta_TP_cool + ppt_warm*tmn_warm*beta_TP_warm;
@@ -131,15 +131,22 @@ transformed parameters {
   // expectation for individual j in year i is sum of year
   // and indivdidual effects
   //
+
+
+//  mu_year <- ppt*beta_ppt + tmn*beta_tmn;
+  // expectation for individual j in year i is sum of year
+  // and indivdidual effects
+  //
   for (i in 1:n_indiv) {
     for (j in 1:n_years) {
 //      mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j];
 // climate*height ratio interactions
-//+ mu_year[j] + ppt_cool[j]*height_ratio_gi[i]*beta_pcool_htr + ppt_warm[j]*height_ratio_gi[i]*beta_pwarm_htr + tmn_cool[j]*height_ratio_gi[i]*beta_tcool_htr + tmn_warm[j]*height_ratio_gi[i]*beta_twarm_htr;
+        mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j] + ppt_cool[j]*height_ratio_gi[i]*beta_pcool_htr + ppt_warm[j]*height_ratio_gi[i]*beta_pwarm_htr + tmn_cool[j]*height_ratio_gi[i]*beta_tcool_htr + tmn_warm[j]*height_ratio_gi[i]*beta_twarm_htr;
 // climate*plot basal area interactions
-          mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j]+ ppt_cool[j]*basal_area_gi[i]*beta_pcool_BA + ppt_warm[j]*basal_area_gi[i]*beta_pwarm_BA + tmn_cool[j]*basal_area_gi[i]*beta_tcool_BA + tmn_warm[j]*basal_area_gi[i]*beta_twarm_BA;
+//          mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j]+ ppt_cool[j]*basal_area_gi[i]*beta_pcool_BA + ppt_warm[j]*basal_area_gi[i]*beta_pwarm_BA + tmn_cool[j]*basal_area_gi[i]*beta_tcool_BA + tmn_warm[j]*basal_area_gi[i]*beta_twarm_BA;
 // climate*size interactions
 //        mu_year_indiv[i,j] <- mu_indiv[i] + mu_year[j] + tmn_warm[j]*tree_size_gi[i]*beta_twarm_size + tmn_cool[j]*tree_size_gi[i]*beta_tcool_size + ppt_cool[j]*tree_size_gi[i]*beta_pcool_size + ppt_warm[j]*tree_size_gi[i]*beta_pwarm_size;
+
      }
   }
   // covariance matrix for Gaussian process
@@ -172,14 +179,6 @@ transformed parameters {
   // shared component at individual level, alpha scales
   // regression coefficients from dbh component to gi component
   //
-  beta_size_gi <- alpha*beta_size;
-  beta_size_gi_squared <- alpha*beta_size_squared;
-  beta_basal_area_gi <- alpha*beta_basal_area;
-  beta_height_ratio_gi <- alpha*beta_height_ratio;
-  gamma_radiation_gi <- alpha*gamma_radiation_dbh;
-  gamma_slope_gi <- alpha*gamma_slope_dbh;
-  gamma_aspect_gi <- alpha*gamma_aspect_dbh;
-  gamma_twi_gi <- alpha*gamma_twi_dbh;
   for (i in 1:n_indiv) {
     alpha_indiv[i] <- beta_size_gi*tree_size_gi[i]
                       + beta_size_gi_squared*pow(tree_size_gi[i], 2.0)
@@ -189,6 +188,9 @@ transformed parameters {
                       + gamma_slope_gi*slope_gi[i]
                       + gamma_aspect_gi*aspect_gi[i]
                       + gamma_twi_gi*twi_gi[i];
+    // for comparison with separate model in growth-increment-with-site.stan
+    //
+    // alpha_indiv[i] <- 0;
   }
 }
 model {
@@ -205,14 +207,14 @@ model {
 //  beta_pwarm_sq ~ normal(0.0, 1.0);
 //  beta_tcool_sq ~ normal(0.0, 1.0);
 //  beta_twarm_sq ~ normal(0.0, 1.0);
-//  beta_pcool_htr ~ normal(0.0, 1.0);
-//  beta_tcool_htr ~ normal(0.0, 1.0);
-//  beta_pwarm_htr ~ normal(0.0, 1.0);
-//  beta_twarm_htr ~ normal(0.0, 1.0);
-  beta_pcool_BA ~ normal(0.0, 1.0);
-  beta_tcool_BA ~ normal(0.0, 1.0);
-  beta_pwarm_BA ~ normal(0.0, 1.0);
-  beta_twarm_BA ~ normal(0.0, 1.0);
+  beta_pcool_htr ~ normal(0.0, 1.0);
+  beta_tcool_htr ~ normal(0.0, 1.0);
+  beta_pwarm_htr ~ normal(0.0, 1.0);
+  beta_twarm_htr ~ normal(0.0, 1.0);
+//  beta_pcool_BA ~ normal(0.0, 1.0);
+//  beta_tcool_BA ~ normal(0.0, 1.0);
+//  beta_pwarm_BA ~ normal(0.0, 1.0);
+//  beta_twarm_BA ~ normal(0.0, 1.0);
 //  beta_twarm_size ~ normal(0.0, 1.0);
 //  beta_pcool_size ~ normal(0.0, 1.0);
 //  beta_tcool_size ~ normal(0.0, 1.0);
@@ -222,26 +224,32 @@ model {
   eta_sq ~ normal(0.0, 1.0);
   inv_rho_sq ~ normal(0.0, 1.0);
   sigma_sq ~ normal(0.0, 1.0);
+  beta_size_gi ~ normal(0.0, 1.0);
+  beta_height_ratio_gi ~ normal(0.0, 1.0);
+  gamma_radiation_gi ~ normal(0.0, 1.0);
+  gamma_slope_gi ~ normal(0.0, 1.0);
+  gamma_aspect_gi ~ normal(0.0, 1.0);
+  gamma_twi_gi ~ normal(0.0, 1.0);
   // priors for dbh component
   //
   beta_0_dbh ~ normal(0.0, 1.0);
   beta_size ~ normal(0.0, 1.0);
-  beta_size_squared ~ normal(0.0, 1.0);
-  beta_basal_area ~ normal(0.0, 1.0);
   beta_height_ratio ~ normal(0.0, 1.0);
   sigma_resid ~ normal(0.0, 1.0);
   sigma_site_dbh ~ normal(0.0, 1.0);
   sigma_species ~ normal(0.0, 1.0);
-  // prior for shared components
-  //
-  // N.B.: alpha is defined with a lower bound of 0, so it is
-  // effectively a half-normal prior
-  //
-  alpha ~ normal(0.0, sqrt(2.0));
   gamma_radiation_dbh ~ normal(0.0, 1.0);
   gamma_slope_dbh ~ normal(0.0, 1.0);
   gamma_aspect_dbh ~ normal(0.0, 1.0);
   gamma_twi_dbh ~ normal(0.0, 1.0);
+  // priors for substrate effects
+  //
+//  for (i in 1:n_substrates_gi) {
+//    beta_0_gi[i] ~ normal(0.0, 1.0);
+//  }
+//  for (i in 1:n_substrates_dbh) {
+//    beta_0_dbh[i] ~ normal(0.0, 1.0);
+//  }
 
   // likelihood for growth increment component
   //
@@ -250,6 +258,7 @@ model {
   }
   for (i in 1:n_sites_gi) {
     mu_site[i] ~ normal(beta_0_gi, sigma_site_gi);
+//    mu_site[i] ~ normal(beta_0_gi[substrate_gi[i]], sigma_site_gi);
   }
   // individual site x year combinations
   //
@@ -261,6 +270,9 @@ model {
   //
   eps_species ~ normal(0.0, sigma_species);
   eps_site ~ normal(beta_0_dbh, sigma_site_dbh);
+//  for (i in 1:n_sites_dbh) {
+//    eps_site[i] ~ normal(beta_0_dbh[substrate_dbh[i]], sigma_site_dbh);
+//  }
   dbh_inc ~ normal(mu_dbh_inc, sigma_resid);
 }
 generated quantities {
