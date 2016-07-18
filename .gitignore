@@ -25,6 +25,7 @@ climate-response-functions/*
 plots.zip
 plots/*.pdf
 *.pptx
+*.docx
 
 ## Miscellaneous other files to ignore
 ##
