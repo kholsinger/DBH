@@ -1,6 +1,5 @@
-library(reshape)
+library(reshape2)
 library(rstan)
-library(shinystan)
 
 rm(list=ls())
 
@@ -8,7 +7,7 @@ debug <- FALSE
 compare <- FALSE
 uncoupled <- TRUE
 coupled <- FALSE
-write.results.file <- FALSE
+write.results.file <- TRUE
 save <- TRUE
 
 save <- save & !debug
@@ -299,8 +298,6 @@ tmp <- unique(tmp)
 substrate_gi <- as.numeric(tmp$substrate)
 rm(tmp)
 
-n.substrates.gi <- length(unique(substrate_gi))
-
 n.indiv <- nrow(data)
 
 ppt <- standardize(ppt)
@@ -318,6 +315,7 @@ radiation <- dbh$total
 slope <- dbh$Slope
 aspect <- dbh$Aspect
 twi <- dbh$TWI
+fire <- as.numeric(dbh$Fire2012) - 1
 substrate <- dbh$substrate
 n_sites_dbh <- length(unique(site_dbh))
 n_obs <- nrow(dbh)
@@ -327,8 +325,6 @@ tmp <- data.frame(site=site_dbh, substrate=substrate)
 tmp <- unique(tmp)
 substrate <- as.numeric(tmp$substrate)
 rm(tmp)
-
-n.substrates.dbh <- length(unique(substrate))
 
 stan.data <- list(gi=gi,
                   site_gi=site_gi,
@@ -345,7 +341,6 @@ stan.data <- list(gi=gi,
                   n_years=n.years,
                   n_indiv=n.indiv,
                   n_sites_gi=n_sites_gi,
-                  n_substrates_gi=n.substrates.gi,
                   n_months=n.months,
                   dbh_inc=dbh_inc,
                   basal_area=basal_area,
@@ -354,11 +349,11 @@ stan.data <- list(gi=gi,
                   slope=slope,
                   aspect=aspect,
                   twi=twi,
+                  fire=fire,
                   substrate_dbh=substrate,
                   site_dbh=site_dbh,
                   species=species,
                   n_sites_dbh=n_sites_dbh,
-                  n_substrates_dbh=n.substrates.dbh,
                   n_obs=n_obs,
                   n_species=n_species)
 stan.pars <- c("beta_0_gi",
@@ -381,6 +376,7 @@ stan.pars <- c("beta_0_gi",
                "gamma_slope_dbh",
                "gamma_aspect_dbh",
                "gamma_twi_dbh",
+               "gamma_fire_dbh",
                "beta_size_gi",
                "beta_size_gi_squared",
                "beta_basal_area_gi",
@@ -406,7 +402,8 @@ fit <- stan(file=model.file,
             thin=n.thin,
             chains=n.chains,
             cores=n.cores,
-            adapt.delta=0.95)
+            adapt.delta=0.95,
+            save_dso=TRUE)
 opt.old <- options(width=120)
 if (write.results.file) {
   sink("results-gi-plus-dbh.txt", append=TRUE, split=TRUE)
@@ -446,6 +443,7 @@ print.pars <- c("mu_site",
                 "gamma_slope_dbh",
                 "gamma_aspect_dbh",
                 "gamma_twi_dbh",
+                "gamma_fire_dbh",
                 "beta_0_gi",
                 "beta_ppt",
                 "beta_tmn",
@@ -573,5 +571,3 @@ if (compare) {
         digits_summary=3)
   options(opt.old)
 }
-
-launch_shinystan(fit)

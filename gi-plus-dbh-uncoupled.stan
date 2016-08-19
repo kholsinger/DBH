@@ -2,7 +2,6 @@ data {
   // for growth increment component
   //
   int<lower=0> n_sites_gi;
-//  int<lower=0> n_substrates_gi;
   int<lower=0> n_years;
   int<lower=0> n_indiv;
   int<lower=0> n_months;
@@ -10,7 +9,6 @@ data {
   matrix[n_years,n_months] tmn;
   matrix[n_indiv,n_years] gi;
   int<lower=0> site_gi[n_indiv];
-//  int<lower=0> substrate_gi[n_sites_gi];
   vector[n_indiv] basal_area_gi;
   vector[n_indiv] tree_size_gi;
   vector[n_indiv] height_ratio_gi;
@@ -22,7 +20,6 @@ data {
   // for dbh component
   //
   int<lower=0> n_sites_dbh;
-//  int<lower=0> n_substrates_dbh;
   int<lower=0> n_obs;
   int<lower=0> n_species;
   vector[n_obs] dbh_inc;
@@ -33,14 +30,13 @@ data {
   vector[n_obs] slope;
   vector[n_obs] aspect;
   vector[n_obs] twi;
+  vector[n_obs] fire;
   int<lower=0> site_dbh[n_obs];
   int<lower=0> species[n_obs];
-//  int<lower=0> substrate_dbh[n_sites_dbh];
 }
 parameters {
   // for growth increment component
   //
-//  vector[n_substrates_gi] beta_0_gi;
   real beta_0_gi;
   vector[n_months] beta_ppt;
   vector[n_months] beta_tmn;
@@ -62,7 +58,6 @@ parameters {
 
   // for dbh component
   //
-//  vector[n_substrates_dbh] beta_0_dbh;
   real beta_0_dbh;
   real beta_size;
   real beta_size_squared;
@@ -77,6 +72,7 @@ parameters {
   real gamma_slope_dbh;
   real gamma_aspect_dbh;
   real gamma_twi_dbh;
+  real gamma_fire_dbh;
 }
 transformed parameters {
   // for growth increment component of the model
@@ -127,6 +123,7 @@ transformed parameters {
                      + gamma_slope_dbh*slope[i]
                      + gamma_aspect_dbh*aspect[i]
                      + gamma_twi_dbh*twi[i]
+                     + gamma_fire_dbh*fire[i]
                      + eps_species[species[i]]
                      + eps_site[site_dbh[i]];
   }
@@ -177,14 +174,7 @@ model {
   gamma_slope_dbh ~ normal(0.0, 1.0);
   gamma_aspect_dbh ~ normal(0.0, 1.0);
   gamma_twi_dbh ~ normal(0.0, 1.0);
-  // priors for substrate effects
-  //
-//  for (i in 1:n_substrates_gi) {
-//    beta_0_gi[i] ~ normal(0.0, 1.0);
-//  }
-//  for (i in 1:n_substrates_dbh) {
-//    beta_0_dbh[i] ~ normal(0.0, 1.0);
-//  }
+  gamma_fire_dbh ~ normal(0.0, 1.0);
 
   // likelihood for growth increment component
   //
