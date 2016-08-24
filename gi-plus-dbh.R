@@ -5,8 +5,8 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- TRUE
-coupled <- FALSE
+uncoupled <- FALSE
+coupled <- TRUE
 write.results.file <- TRUE
 save <- TRUE
 
@@ -16,7 +16,7 @@ write.results.file <- write.results.file & !debug
 base_year <- 2004 # note that base_year is also defined on line 280
 
 if (coupled) {
-  model.file <- "gi-plus-dbh.stan"
+  model.file <- "gi-plus-dbh-coupled.stan"
 } else if (uncoupled) {
   model.file <- "gi-plus-dbh-uncoupled.stan"
 } else {

@@ -6624,3 +6624,122 @@ Samples were drawn using NUTS(diag_e) at Fri Aug 19 10:19:04 2016.
 For each parameter, n_eff is a crude measure of effective sample size,
 and Rhat is the potential scale reduction factor on split chains (at 
 convergence, Rhat=1).
+
+
+************************************************************
+Tue Aug 23 11:30:47 2016
+With Gaussian process model for individuals
+   gi and dbh regression uncoupled
+     using raw data
+5 individuals discarded from growth increment analysis
+because of missing covariate data (plot, radiation, slope,
+aspect, twi)
+Inference for Stan model: gi-plus-dbh-uncoupled.
+4 chains, each with iter=2500; warmup=1250; thin=1; 
+post-warmup draws per chain=1250, total post-warmup draws=5000.
+
+                       mean se_mean    sd   2.5%    25%    50%    75%  97.5% n_eff  Rhat
+mu_site[1]            0.726   0.003 0.135  0.439  0.640  0.737  0.819  0.966  1501 1.001
+mu_site[2]            1.013   0.003 0.131  0.783  0.921  1.004  1.094  1.285  1838 1.002
+mu_site[3]            0.863   0.003 0.150  0.570  0.770  0.859  0.950  1.172  2585 1.002
+mu_site[4]            0.963   0.003 0.162  0.675  0.858  0.951  1.058  1.301  2388 1.000
+mu_site[5]            0.947   0.004 0.150  0.662  0.850  0.936  1.036  1.276  1587 1.002
+mu_site[6]            0.937   0.003 0.166  0.633  0.832  0.924  1.033  1.293  2285 1.002
+mu_site[7]            0.705   0.004 0.139  0.414  0.619  0.714  0.802  0.943  1169 1.002
+mu_site[8]            0.803   0.003 0.137  0.518  0.722  0.811  0.889  1.060  1925 1.000
+mu_site[9]            0.812   0.003 0.152  0.510  0.720  0.820  0.905  1.111  1910 1.000
+mu_site[10]           0.863   0.005 0.169  0.538  0.767  0.858  0.959  1.211  1361 1.005
+mu_site[11]           0.842   0.005 0.171  0.510  0.748  0.845  0.934  1.201  1432 1.001
+mu_site[12]           0.802   0.003 0.137  0.510  0.720  0.810  0.886  1.058  2097 1.000
+mu_site[13]           0.958   0.003 0.134  0.721  0.871  0.947  1.038  1.241  1818 1.003
+mu_site[14]           0.840   0.003 0.134  0.557  0.761  0.846  0.921  1.099  1633 1.001
+mu_site[15]           0.942   0.003 0.138  0.695  0.851  0.932  1.026  1.227  2091 1.002
+sigma_indiv           0.351   0.000 0.027  0.302  0.332  0.350  0.368  0.408  3366 1.000
+sigma_site_gi         0.173   0.004 0.083  0.041  0.117  0.162  0.215  0.368   549 1.007
+eta_sq                0.099   0.000 0.005  0.089  0.095  0.099  0.102  0.109  5000 1.001
+rho_sq                0.111   0.000 0.006  0.100  0.107  0.111  0.115  0.124  5000 1.000
+sigma_sq              0.048   0.000 0.001  0.045  0.047  0.048  0.049  0.051  5000 1.000
+beta_0_dbh            0.270   0.025 0.333 -0.380  0.085  0.267  0.436  1.044   179 1.020
+beta_size            -0.472   0.002 0.083 -0.635 -0.527 -0.473 -0.416 -0.311  1996 1.001
+beta_size_squared     0.033   0.001 0.027 -0.020  0.015  0.034  0.051  0.087  2646 1.000
+beta_basal_area      -0.163   0.003 0.119 -0.403 -0.237 -0.164 -0.089  0.083  1757 1.001
+beta_height_ratio     0.243   0.001 0.064  0.116  0.200  0.243  0.285  0.371  2997 1.000
+gamma_radiation_dbh  -0.185   0.002 0.088 -0.363 -0.239 -0.184 -0.133 -0.013  2551 1.000
+gamma_slope_dbh      -0.001   0.002 0.101 -0.207 -0.062 -0.002  0.061  0.207  2061 1.000
+gamma_aspect_dbh     -0.249   0.002 0.101 -0.442 -0.314 -0.250 -0.185 -0.044  2060 1.001
+gamma_twi_dbh         0.112   0.004 0.134 -0.146  0.030  0.111  0.190  0.380  1231 1.001
+gamma_fire_dbh        0.240   0.005 0.220 -0.218  0.104  0.242  0.376  0.678  2368 1.001
+beta_0_gi             0.865   0.001 0.068  0.737  0.820  0.865  0.910  0.999  2286 1.000
+beta_ppt[1]           0.129   0.000 0.011  0.106  0.121  0.129  0.136  0.151   920 1.006
+beta_ppt[2]           0.065   0.000 0.013  0.039  0.056  0.065  0.074  0.091   883 1.007
+beta_ppt[3]          -0.049   0.000 0.016 -0.080 -0.060 -0.049 -0.039 -0.018   990 1.006
+beta_ppt[4]           0.010   0.001 0.017 -0.021 -0.001  0.010  0.022  0.042   977 1.006
+beta_ppt[5]           0.148   0.000 0.011  0.126  0.141  0.148  0.156  0.169  1275 1.005
+beta_ppt[6]           0.060   0.000 0.007  0.045  0.055  0.060  0.064  0.074  3189 1.000
+beta_ppt[7]           0.110   0.001 0.015  0.079  0.100  0.110  0.121  0.140   923 1.006
+beta_ppt[8]           0.012   0.001 0.015 -0.017  0.002  0.012  0.022  0.042   858 1.006
+beta_ppt[9]           0.123   0.000 0.011  0.102  0.116  0.123  0.131  0.145  1539 1.001
+beta_ppt[10]         -0.006   0.000 0.014 -0.034 -0.016 -0.006  0.003  0.021  1677 1.004
+beta_ppt[11]          0.053   0.000 0.014  0.025  0.043  0.053  0.062  0.080  1650 1.002
+beta_ppt[12]         -0.004   0.000 0.013 -0.028 -0.013 -0.004  0.005  0.021  1064 1.005
+beta_tmn[1]           0.038   0.000 0.011  0.015  0.031  0.038  0.046  0.059  1737 1.001
+beta_tmn[2]          -0.147   0.000 0.013 -0.173 -0.157 -0.148 -0.138 -0.120  1789 1.001
+beta_tmn[3]          -0.096   0.001 0.022 -0.139 -0.110 -0.096 -0.081 -0.053   916 1.006
+beta_tmn[4]           0.018   0.000 0.011 -0.004  0.010  0.018  0.026  0.040  1505 1.002
+beta_tmn[5]           0.039   0.000 0.014  0.011  0.029  0.039  0.048  0.066  1036 1.006
+beta_tmn[6]          -0.088   0.001 0.015 -0.117 -0.098 -0.088 -0.078 -0.058   755 1.008
+beta_tmn[7]           0.053   0.000 0.010  0.034  0.047  0.053  0.060  0.073  1588 1.005
+beta_tmn[8]           0.047   0.000 0.009  0.029  0.041  0.047  0.053  0.065  2352 1.000
+beta_tmn[9]          -0.013   0.000 0.011 -0.034 -0.020 -0.013 -0.006  0.008  1974 1.000
+beta_tmn[10]         -0.033   0.000 0.011 -0.055 -0.041 -0.033 -0.026 -0.012  2546 1.001
+beta_tmn[11]          0.065   0.000 0.014  0.037  0.056  0.065  0.074  0.093  1186 1.003
+beta_tmn[12]         -0.040   0.000 0.011 -0.062 -0.047 -0.040 -0.032 -0.018  1521 1.002
+beta_size_gi         -0.359   0.002 0.077 -0.506 -0.410 -0.361 -0.307 -0.206  1918 1.001
+beta_size_gi_squared  0.086   0.001 0.024  0.039  0.070  0.086  0.102  0.131  1880 1.002
+beta_basal_area_gi   -0.149   0.002 0.086 -0.323 -0.203 -0.148 -0.095  0.020  1414 1.000
+beta_height_ratio_gi  0.209   0.001 0.059  0.091  0.168  0.209  0.249  0.324  2394 1.001
+gamma_radiation_gi   -0.054   0.002 0.065 -0.178 -0.096 -0.055 -0.015  0.077  1479 1.003
+gamma_slope_gi        0.127   0.002 0.076 -0.031  0.081  0.127  0.173  0.280  1349 1.002
+gamma_aspect_gi      -0.130   0.002 0.075 -0.276 -0.178 -0.132 -0.085  0.026  1461 1.001
+gamma_twi_gi          0.243   0.003 0.096  0.048  0.184  0.244  0.302  0.424  1167 1.001
+sigma_resid           0.817   0.000 0.026  0.769  0.799  0.816  0.834  0.868  5000 0.999
+sigma_site_dbh        0.257   0.003 0.109  0.099  0.182  0.241  0.308  0.521  1086 1.004
+sigma_species         0.592   0.011 0.305  0.240  0.379  0.519  0.714  1.420   777 1.005
+
+Samples were drawn using NUTS(diag_e) at Tue Aug 23 11:30:47 2016.
+For each parameter, n_eff is a crude measure of effective sample size,
+and Rhat is the potential scale reduction factor on split chains (at 
+convergence, Rhat=1).
+
+
+************************************************************
+Tue Aug 23 11:34:24 2016
+With Gaussian process model for individuals
+   gi regression proportional to dbh regression
+     using raw data
+5 individuals discarded from growth increment analysis
+because of missing covariate data (plot, radiation, slope,
+aspect, twi)
+Stan model 'gi-plus-dbh' does not contain samples.
+
+
+************************************************************
+Tue Aug 23 12:32:56 2016
+With Gaussian process model for individuals
+   gi regression proportional to dbh regression
+     using raw data
+5 individuals discarded from growth increment analysis
+because of missing covariate data (plot, radiation, slope,
+aspect, twi)
+Stan model 'gi-plus-dbh' does not contain samples.
+
+
+************************************************************
+Wed Aug 24 11:23:16 2016
+With Gaussian process model for individuals
+   gi regression proportional to dbh regression
+     using raw data
+5 individuals discarded from growth increment analysis
+because of missing covariate data (plot, radiation, slope,
+aspect, twi)
+Stan model 'gi-plus-dbh-coupled' does not contain samples.
