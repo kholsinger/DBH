@@ -30,7 +30,6 @@ data {
   vector[n_obs] slope;
   vector[n_obs] aspect;
   vector[n_obs] twi;
-  vector[n_obs] fire;
   int<lower=0> site_dbh[n_obs];
   int<lower=0> species[n_obs];
 }
@@ -60,7 +59,6 @@ parameters {
   real<lower=0> sigma_species;
   vector[n_sites_dbh] eps_site;
   vector[n_species] eps_species;
-  real gamma_fire_dbh;
 
   // for the connection
   //
@@ -130,7 +128,6 @@ transformed parameters {
                      + gamma_slope_dbh*slope[i]
                      + gamma_aspect_dbh*aspect[i]
                      + gamma_twi_dbh*twi[i]
-                     + gamma_fire_dbh*fire[i]
                      + eps_species[species[i]]
                      + eps_site[site_dbh[i]];
   }
@@ -175,7 +172,6 @@ model {
   beta_size_squared ~ normal(0.0, 1.0);
   beta_basal_area ~ normal(0.0, 1.0);
   beta_height_ratio ~ normal(0.0, 1.0);
-  gamma_fire_dbh ~ normal(0.0, 1.0);
   sigma_resid ~ normal(0.0, 1.0);
   sigma_site_dbh ~ normal(0.0, 1.0);
   sigma_species ~ normal(0.0, 1.0);
