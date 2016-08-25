@@ -402,7 +402,7 @@ fit <- stan(file=model.file,
             thin=n.thin,
             chains=n.chains,
             cores=n.cores,
-            adapt.delta=0.95,
+            adapt_delta=0.95,
             save_dso=TRUE)
 opt.old <- options(width=120)
 if (write.results.file) {
