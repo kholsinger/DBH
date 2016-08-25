@@ -5,8 +5,8 @@ rm(list=ls())
 
 debug <- FALSE
 compare <- FALSE
-uncoupled <- TRUE
-coupled <- FALSE
+uncoupled <- FALSE
+coupled <- TRUE
 write.results.file <- TRUE
 save <- TRUE
 
