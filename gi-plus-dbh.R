@@ -3,7 +3,7 @@ library(rstan)
 
 rm(list=ls())
 
-debug <- FALSE
+debug <- TRUE
 compare <- FALSE
 uncoupled <- FALSE
 coupled <- TRUE
@@ -402,7 +402,7 @@ fit <- stan(file=model.file,
             thin=n.thin,
             chains=n.chains,
             cores=n.cores,
-            adapt_delta=0.95,
+            control=list(adapt_delta=0.95),
             save_dso=TRUE)
 opt.old <- options(width=120)
 if (write.results.file) {
